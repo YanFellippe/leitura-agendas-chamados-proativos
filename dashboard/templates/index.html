@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Monitor de Salas — AGU</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rawline:wght@400;500;600;700&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales/pt-br.global.min.js"></script>
+</head>
+<body>
+  <!-- Barra gov.br -->
+  <div class="gov-bar">
+    <img class="gov-bar-logo"
+         src="https://www.gov.br/++theme++padrao_govbr/img/govbr-logo-large.png"
+         alt="Gov.br" />
+    <div class="gov-bar-sep"></div>
+    <span class="gov-bar-text">Advocacia-Geral da União</span>
+  </div>
+
+  <header>
+    <div class="header-inner">
+      <h1>Monitor de Salas de Reunião</h1>
+      <div class="header-meta">
+        <span id="clock"></span>
+        <button id="theme-btn" onclick="toggleTheme()" title="Alternar tema">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button id="refresh-btn" onclick="refresh()">
+          <i class="fas fa-sync-alt"></i> Atualizar
+        </button>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button class="tab active" onclick="switchTab('cards', this)">
+        <i class="fas fa-th-large"></i> Cards
+      </button>
+      <button class="tab" onclick="switchTab('calendar', this)">
+        <i class="fas fa-calendar-alt"></i> Calendário
+      </button>
+      <button class="tab" onclick="switchTab('status', this)">
+        <i class="fas fa-wifi"></i> Status das Salas
+      </button>
+      <button class="tab" onclick="switchTab('history', this)">
+        <i class="fas fa-history"></i> Histórico
+      </button>
+    </nav>
+  </header>
+
+  <main>
+    <div id="view-cards">
+      <div id="summary" class="summary"></div>
+      <div id="grid" class="grid"></div>
+      <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <span>Carregando salas...</span>
+      </div>
+    </div>
+
+    <div id="view-calendar" style="display:none">
+      <div id="calendar-loading" class="loading hidden">
+        <div class="spinner"></div>
+        <span>Carregando calendário...</span>
+      </div>
+      <div id="calendar"></div>
+    </div>
+
+    <div id="view-status" style="display:none">
+      <div id="status-grid" class="status-grid"></div>
+      <div id="status-loading" class="loading hidden">
+        <div class="spinner"></div>
+        <span>Verificando salas...</span>
+      </div>
+    </div>
+
+    <div id="view-history" style="display:none">
+      <div class="history-toolbar">
+        <label>Período:
+          <select id="history-days" onchange="loadHistory()">
+            <option value="7">Últimos 7 dias</option>
+            <option value="14">Últimos 14 dias</option>
+            <option value="30">Últimos 30 dias</option>
+            <option value="365">Último ano</option>
+          </select>
+        </label>
+        <span id="history-count" class="history-count"></span>
+      </div>
+      <div id="history-table-wrap">
+        <div id="history-loading" class="loading hidden">
+          <div class="spinner"></div>
+          <span>Carregando histórico...</span>
+        </div>
+        <table id="history-table" class="history-table" style="display:none">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Sala</th>
+              <th>Chamado</th>
+              <th>Status</th>
+              <th>Antecipado</th>
+            </tr>
+          </thead>
+          <tbody id="history-body"></tbody>
+        </table>
+        <p id="history-empty" class="empty" style="display:none">Nenhum chamado encontrado no período.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL evento único -->
+  <div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- MODAL dia completo -->
+  <div id="day-modal-overlay" class="modal-overlay" onclick="closeDayModal()">
+    <div class="modal modal-day" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeDayModal()"><i class="fas fa-times"></i></button>
+      <div id="day-modal-content"></div>
+    </div>
+  </div>
+
+  <!-- MODAL confirmação de vistoria -->
+  <div id="confirm-overlay" class="modal-overlay" onclick="cancelForceTicket()">
+    <div class="modal modal-confirm" onclick="event.stopPropagation()">
+      <div class="confirm-icon"><i class="fas fa-clipboard-check"></i></div>
+      <h2 class="confirm-title">Abrir Vistoria</h2>
+      <p class="confirm-msg" id="confirm-msg"></p>
+      <div class="confirm-actions">
+        <button class="confirm-btn confirm-cancel" onclick="cancelForceTicket()">Cancelar</button>
+        <button class="confirm-btn confirm-ok" id="confirm-ok-btn">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let calendarInstance = null;
+
+    // ── TEMA ───────────────────────────────────────────────
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute("data-theme") === "dark";
+      html.setAttribute("data-theme", isDark ? "light" : "dark");
+      const icon = document.querySelector("#theme-btn i");
+      icon.className = isDark ? "fas fa-moon" : "fas fa-sun";
+      localStorage.setItem("theme", isDark ? "light" : "dark");
+    }
+    // Restaura tema salvo
+    (function() {
+      const saved = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", saved);
+      document.addEventListener("DOMContentLoaded", () => {
+        const icon = document.querySelector("#theme-btn i");
+        if (icon) icon.className = saved === "dark" ? "fas fa-sun" : "fas fa-moon";
+      });
+    })();
+
+    function updateClock() {
+      document.getElementById("clock").textContent = new Date().toLocaleString("pt-BR");
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function switchTab(view, btn) {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("view-cards").style.display    = view === "cards"    ? "block" : "none";
+      document.getElementById("view-calendar").style.display = view === "calendar" ? "block" : "none";
+      document.getElementById("view-status").style.display   = view === "status"   ? "block" : "none";
+      document.getElementById("view-history").style.display  = view === "history"  ? "block" : "none";
+      if (view === "calendar") {
+        if (!calendarInstance) initCalendar();
+        else setTimeout(() => calendarInstance.updateSize(), 50);
+      }
+      if (view === "status")  loadStatus();
+      if (view === "history") loadHistory();
+    }
+
+    function refresh() {
+      loadCards();
+      if (calendarInstance) calendarInstance.refetchEvents();
+      if (document.getElementById("view-status").style.display !== "none") loadStatus();
+    }
+
+    // ── STATUS ─────────────────────────────────────────────
+    async function loadStatus() {
+      const grid    = document.getElementById("status-grid");
+      const loading = document.getElementById("status-loading");
+      grid.innerHTML = "";
+      loading.classList.remove("hidden");
+
+      try {
+        const res   = await fetch("/api/rooms/status");
+        const rooms = await res.json();
+        loading.classList.add("hidden");
+
+        rooms.forEach(room => {
+          const isOk = room.status === "ok";
+          const card = document.createElement("div");
+          card.className = `status-card ${isOk ? "status-ok" : "status-error"}`;
+          card.innerHTML = `
+            <div class="status-header">
+              <div>
+                <div class="status-name">${room.name}</div>
+                <div class="status-email">${room.email}</div>
+              </div>
+              <span class="status-badge ${isOk ? "badge-ok" : "badge-err"}">
+                ${isOk ? '<i class="fas fa-check-circle"></i> Acessível' : '<i class="fas fa-times-circle"></i> Erro'}
+              </span>
+            </div>
+            ${isOk
+              ? `<div class="status-info"><i class="fas fa-calendar-check"></i> ${room.events} evento(s) hoje</div>`
+              : `<div class="status-error-msg"><i class="fas fa-exclamation-triangle"></i> ${room.error}</div>`
+            }
+          `;
+          grid.appendChild(card);
+        });
+      } catch(e) {
+        loading.innerHTML = '<div class="spinner"></div><span>Erro ao carregar status das salas.</span>';
+      }
+    }
+
+    // ── CARDS ──────────────────────────────────────────────
+    async function loadCards() {
+      const grid    = document.getElementById("grid");
+      const loading = document.getElementById("loading");
+      const summary = document.getElementById("summary");
+      const btn     = document.getElementById("refresh-btn");
+
+      grid.innerHTML = "";
+      summary.innerHTML = "";
+      loading.classList.remove("hidden");
+      btn.disabled = true;
+
+      try {
+        const res   = await fetch("/api/rooms");
+        const rooms = await res.json();
+        loading.classList.add("hidden");
+        btn.disabled = false;
+
+        const totalRooms    = rooms.length;
+        const busyRooms     = rooms.filter(r => r.meetings.some(m => m.happening)).length;
+        const totalMeetings = rooms.reduce((acc, r) => acc + r.meetings.length, 0);
+
+        summary.innerHTML = `
+          <div class="stat"><span>${totalRooms}</span>Salas monitoradas</div>
+          <div class="stat busy"><span>${busyRooms}</span>Em reunião agora</div>
+          <div class="stat"><span>${totalMeetings}</span>Reuniões hoje</div>
+        `;
+
+        if (!rooms.length) {
+          grid.innerHTML = `<p class="empty">Nenhuma sala encontrada.</p>`;
+          return;
+        }
+
+        rooms.forEach(room => {
+          const hasActive = room.meetings.some(m => m.happening);
+          const card = document.createElement("div");
+          card.className = `card ${hasActive ? "active" : room.meetings.length > 0 ? "scheduled" : "free"}`;
+
+          const badge = hasActive
+            ? `<span class="badge badge-active"><i class="fas fa-circle"></i> Em reunião</span>`
+            : room.meetings.length > 0
+            ? `<span class="badge badge-scheduled"><i class="fas fa-clock"></i> Agendada</span>`
+            : `<span class="badge badge-free"><i class="fas fa-check"></i> Livre</span>`;
+
+          const meetingsHtml = room.meetings.length === 0
+            ? `<p class="no-meetings">Nenhuma reunião hoje</p>`
+            : room.meetings.map(m => `
+              <div class="meeting ${m.happening ? "meeting-now" : ""}">
+                <div class="meeting-title">${m.subject}</div>
+                <div class="meeting-meta"><span><i class="fas fa-map-marker-alt"></i> ${m.location}</span></div>
+                <div class="meeting-times">
+                  <div class="time-block"><label><i class="fas fa-play"></i> Início</label><span>${m.start.split(" ")[1]}</span></div>
+                  <div class="time-sep"><i class="fas fa-arrow-right"></i></div>
+                  <div class="time-block"><label><i class="fas fa-stop"></i> Fim</label><span>${m.end.split(" ")[1]}</span></div>
+                </div>
+                ${m.happening ? `<div class="happening-bar"><div class="happening-label"><i class="fas fa-circle fa-xs"></i> Acontecendo agora</div></div>` : ""}
+                <div class="meeting-actions">
+                  <button class="btn-force-ticket" onclick="forceTicket(this, '${room.room.replace(/'/g, "\\'")}', '${room.email}', '${(m.organizer || '').replace(/'/g, "\\'")}')">
+                    <i class="fas fa-clipboard-check"></i> Abrir Vistoria
+                  </button>
+                </div>
+              </div>
+            `).join("");
+
+          card.innerHTML = `
+            <div class="card-header">
+              <div><h2>${room.room}</h2><small>${room.email}</small></div>
+              ${badge}
+            </div>
+            <div class="meetings">${meetingsHtml}</div>
+          `;
+          grid.appendChild(card);
+        });
+
+      } catch (err) {
+        loading.innerHTML = '<div class="spinner"></div><span>Erro ao carregar dados.</span>';
+        loading.classList.remove("hidden");
+        btn.disabled = false;
+      }
+    }
+
+    // ── CALENDAR ───────────────────────────────────────────
+    function initCalendar() {
+      const el = document.getElementById("calendar");
+      calendarInstance = new FullCalendar.Calendar(el, {
+        locale: "pt-br",
+        initialView: "dayGridMonth",
+        headerToolbar: {
+          left: "prev,next today",
+          center: "title",
+          right: "timeGridDay,timeGridWeek,dayGridMonth"
+        },
+        buttonText: { today: "Hoje", month: "Mês", week: "Semana", day: "Dia" },
+        height: "auto",
+        nowIndicator: true,
+        dayMaxEvents: 3,
+        moreLinkClick: function(info) {
+          openDayModal(info.date.toISOString().slice(0, 10));
+          return "none";
+        },
+        slotMinTime: "07:00:00",
+        slotMaxTime: "22:00:00",
+        events: async function(info, success, failure) {
+          document.getElementById("calendar-loading").classList.remove("hidden");
+          try {
+            const params = new URLSearchParams({ start: info.startStr, end: info.endStr });
+            const res  = await fetch("/api/calendar?" + params);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            if (!Array.isArray(data)) throw new Error("Resposta inválida");
+            success(data);
+          } catch(e) {
+            console.error("Erro ao carregar eventos:", e);
+            failure(e);
+          } finally {
+            document.getElementById("calendar-loading").classList.add("hidden");
+          }
+        },
+        eventClick: function(info) {
+          const p = info.event.extendedProps;
+          document.getElementById("modal-content").innerHTML = `
+            <h2>${info.event.title}</h2>
+            <p class="modal-room"><i class="fas fa-map-marker-alt"></i> ${p.location}</p>
+            <div class="modal-times">
+              <div class="time-block"><label><i class="fas fa-play"></i> Início</label><span>${info.event.start.toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit"})}</span></div>
+              <div class="time-sep"><i class="fas fa-arrow-right"></i></div>
+              <div class="time-block"><label><i class="fas fa-stop"></i> Fim</label><span>${info.event.end ? info.event.end.toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit"}) : "--"}</span></div>
+            </div>
+            <p class="modal-email"><i class="fas fa-envelope"></i> ${p.email}</p>
+          `;
+          document.getElementById("modal-overlay").classList.add("open");
+        },
+        dateClick: function(info) {
+          openDayModal(info.dateStr);
+        }
+      });
+      calendarInstance.render();
+    }
+
+    function closeModal() {
+      document.getElementById("modal-overlay").classList.remove("open");
+    }
+
+    function closeDayModal() {
+      document.getElementById("day-modal-overlay").classList.remove("open");
+    }
+
+    // Lê eventos já carregados no FullCalendar — zero requisição de rede
+    function openDayModal(dateStr) {
+      const overlay = document.getElementById("day-modal-overlay");
+      const content = document.getElementById("day-modal-content");
+
+      const [year, month, day] = dateStr.split("-");
+      const dateLabel = new Date(year, month - 1, day).toLocaleDateString("pt-BR", {
+        weekday: "long", day: "2-digit", month: "long", year: "numeric"
+      });
+
+      const dayStart = new Date(year, month - 1, day, 0, 0, 0);
+      const dayEnd   = new Date(year, month - 1, day, 23, 59, 59);
+
+      const events = calendarInstance.getEvents().filter(ev => {
+        const s = ev.start;
+        return s && s >= dayStart && s <= dayEnd;
+      });
+
+      if (!events.length) {
+        content.innerHTML = `
+          <h2 class="day-modal-title"><i class="fas fa-calendar-day"></i> ${dateLabel}</h2>
+          <p class="day-modal-empty">Nenhuma reunião encontrada para este dia.</p>
+        `;
+        overlay.classList.add("open");
+        return;
+      }
+
+      // Agrupa por sala e ordena por horário
+      const byRoom = {};
+      events.forEach(ev => {
+        const room  = ev.extendedProps.room;
+        const color = ev.backgroundColor || ev.borderColor || "#6366f1";
+        if (!byRoom[room]) byRoom[room] = { color, events: [] };
+        byRoom[room].events.push(ev);
+      });
+      Object.values(byRoom).forEach(r => r.events.sort((a, b) => a.start - b.start));
+
+      const roomsHtml = Object.entries(byRoom).map(([room, data]) => {
+        const eventsHtml = data.events.map(ev => {
+          const s = ev.start.toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"});
+          const e = ev.end ? ev.end.toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"}) : "--";
+          return `
+            <div class="day-event">
+              <div class="day-event-dot" style="background:${data.color}"></div>
+              <div class="day-event-info">
+                <span class="day-event-title">${ev.title}</span>
+                <span class="day-event-time">${s} → ${e}</span>
+              </div>
+            </div>`;
+        }).join("");
+
+        return `
+          <div class="day-room">
+            <div class="day-room-header">
+              <span class="day-room-dot" style="background:${data.color}"></span>
+              <span class="day-room-name">${room}</span>
+              <span class="day-room-count">${data.events.length} reunião(ões)</span>
+            </div>
+            <div class="day-room-events">${eventsHtml}</div>
+          </div>`;
+      }).join("");
+
+      content.innerHTML = `
+        <h2 class="day-modal-title"><i class="fas fa-calendar-day"></i> ${dateLabel}</h2>
+        <p class="day-modal-subtitle">${events.length} reunião(ões) em ${Object.keys(byRoom).length} sala(s)</p>
+        <div class="day-rooms">${roomsHtml}</div>
+      `;
+      overlay.classList.add("open");
+    }
+
+    // ── CONFIRM MODAL ───────────────────────────────────
+    let _confirmResolve = null;
+
+    function openConfirmModal(roomName) {
+      document.getElementById("confirm-msg").textContent =
+        `Deseja abrir um chamado de vistoria para "${roomName}"?`;
+      document.getElementById("confirm-overlay").classList.add("open");
+      return new Promise(resolve => {
+        _confirmResolve = resolve;
+        document.getElementById("confirm-ok-btn").onclick = () => { closeConfirmModal(); resolve(true); };
+      });
+    }
+
+    function cancelForceTicket() { closeConfirmModal(); if (_confirmResolve) { _confirmResolve(false); _confirmResolve = null; } }
+    function closeConfirmModal() { document.getElementById("confirm-overlay").classList.remove("open"); }
+
+    // ── FORCE TICKET ─────────────────────────────────────
+    async function forceTicket(btn, room, email, organizerEmail) {
+      const confirmed = await openConfirmModal(room);
+      if (!confirmed) return;
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Abrindo...';
+
+      try {
+        const res = await fetch("/api/force-ticket", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ room, email, organizer_email: organizerEmail || "" }),
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          btn.innerHTML = `<i class="fas fa-check"></i> #${data.request_id}`;
+          btn.classList.add("btn-success");
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-clipboard-check"></i> Abrir Vistoria';
+            btn.classList.remove("btn-success");
+          }, 5000);
+        } else {
+          alert("Erro: " + (data.error || "Falha ao criar chamado"));
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-clipboard-check"></i> Abrir Vistoria';
+        }
+      } catch (e) {
+        alert("Erro de conexão: " + e.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-clipboard-check"></i> Abrir Vistoria';
+      }
+    }
+
+    loadCards();
+    setInterval(loadCards, 300000);
+
+    // ── HISTORY ────────────────────────────────────────────
+    async function loadHistory() {
+      const days    = document.getElementById("history-days").value;
+      const loading = document.getElementById("history-loading");
+      const table   = document.getElementById("history-table");
+      const empty   = document.getElementById("history-empty");
+      const body    = document.getElementById("history-body");
+      const count   = document.getElementById("history-count");
+
+      loading.classList.remove("hidden");
+      table.style.display = "none";
+      empty.style.display = "none";
+      body.innerHTML = "";
+
+      try {
+        const res  = await fetch(`/api/history?days=${days}`);
+        const rows = await res.json();
+        loading.classList.add("hidden");
+
+        if (!rows.length) {
+          empty.style.display = "block";
+          count.textContent = "";
+          return;
+        }
+
+        count.textContent = `${rows.length} chamado(s)`;
+
+        // Agrupa por data para exibir separadores
+        let lastDate = null;
+        rows.forEach(row => {
+          const [y, m, d] = row.date.split("-");
+          const label = new Date(y, m - 1, d).toLocaleDateString("pt-BR", {
+            weekday: "long", day: "2-digit", month: "long", year: "numeric"
+          });
+
+          if (row.date !== lastDate) {
+            const sep = document.createElement("tr");
+            sep.className = "history-date-sep";
+            sep.innerHTML = `<td colspan="5">${label}</td>`;
+            body.appendChild(sep);
+            lastDate = row.date;
+          }
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="history-date">${row.date}</td>
+            <td class="history-room">${row.room}</td>
+            <td class="history-ticket">${row.request_id ? `<span class="ticket-badge">#${row.request_id}</span>` : '<span class="ticket-none">—</span>'}</td>
+            <td class="history-status">${row.forced ? '<span class="status-forced">Forçado</span>' : '<span class="status-auto">Automático</span>'}</td>
+            <td class="history-anticipated">${row.anticipated ? '<span class="status-anticipated">Sim</span>' : '<span class="status-not-anticipated">Não</span>'}</td>
+          `;
+          body.appendChild(tr);
+        });
+
+        table.style.display = "table";
+
+      } catch(e) {
+        loading.innerHTML = '<div class="spinner"></div><span>Erro ao carregar histórico.</span>';
+        loading.classList.remove("hidden");
+      }
+    }
+  </script>
+</body>
+</html>
