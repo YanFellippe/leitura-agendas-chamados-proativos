@@ -61,7 +61,7 @@
       </div>
     </div>
 
-    <div id="view-calendar" style="display:none">
+    <div id="view-calendar" style="display:none; position:relative;">
       <div id="calendar-loading" class="loading hidden">
         <div class="spinner"></div>
         <span>Carregando calendário...</span>
@@ -179,28 +179,35 @@
         if (!calendarInstance) initCalendar();
         else setTimeout(() => calendarInstance.updateSize(), 50);
       }
-      if (view === "status")  loadStatus();
-      if (view === "history") loadHistory();
+      if (view === "status")  loadStatus(document.getElementById("status-grid").children.length > 0);
+      if (view === "history") loadHistory(document.getElementById("history-body").children.length > 0);
     }
 
     function refresh() {
-      loadCards();
+      loadCards(true);
       if (calendarInstance) calendarInstance.refetchEvents();
-      if (document.getElementById("view-status").style.display !== "none") loadStatus();
+      if (document.getElementById("view-status").style.display !== "none") loadStatus(true);
+      if (document.getElementById("view-history").style.display !== "none") loadHistory(true);
     }
 
     // ── STATUS ─────────────────────────────────────────────
-    async function loadStatus() {
+    async function loadStatus(isBackground = false) {
       const grid    = document.getElementById("status-grid");
       const loading = document.getElementById("status-loading");
-      grid.innerHTML = "";
-      loading.classList.remove("hidden");
+
+      // Só mostra loading/limpa se não há conteúdo anterior (primeira carga)
+      if (!isBackground || !grid.children.length) {
+        grid.innerHTML = "";
+        loading.classList.remove("hidden");
+      }
 
       try {
         const res   = await fetch("/api/rooms/status");
         const rooms = await res.json();
         loading.classList.add("hidden");
 
+        // Substitui o conteúdo com os novos dados
+        grid.innerHTML = "";
         rooms.forEach(room => {
           const isOk = room.status === "ok";
           const card = document.createElement("div");
@@ -223,27 +230,37 @@
           grid.appendChild(card);
         });
       } catch(e) {
-        loading.innerHTML = '<div class="spinner"></div><span>Erro ao carregar status das salas.</span>';
+        // Só mostra erro se não há conteúdo anterior
+        if (!grid.children.length) {
+          loading.innerHTML = '<div class="spinner"></div><span>Erro ao carregar status das salas.</span>';
+        }
       }
     }
 
     // ── CARDS ──────────────────────────────────────────────
-    async function loadCards() {
+    async function loadCards(isBackground = false) {
       const grid    = document.getElementById("grid");
       const loading = document.getElementById("loading");
       const summary = document.getElementById("summary");
       const btn     = document.getElementById("refresh-btn");
 
-      grid.innerHTML = "";
-      summary.innerHTML = "";
-      loading.classList.remove("hidden");
+      // Só mostra loading/limpa se é a primeira carga (sem conteúdo)
+      if (!isBackground || !grid.children.length) {
+        grid.innerHTML = "";
+        summary.innerHTML = "";
+        loading.classList.remove("hidden");
+      }
+
+      // Indica loading no botão
       btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Atualizando...';
 
       try {
         const res   = await fetch("/api/rooms");
         const rooms = await res.json();
         loading.classList.add("hidden");
         btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sync-alt"></i> Atualizar';
 
         const totalRooms    = rooms.length;
         const busyRooms     = rooms.filter(r => r.meetings.some(m => m.happening)).length;
@@ -260,6 +277,8 @@
           return;
         }
 
+        // Substitui o grid com os novos dados
+        grid.innerHTML = "";
         rooms.forEach(room => {
           const hasActive = room.meetings.some(m => m.happening);
           const card = document.createElement("div");
@@ -302,13 +321,19 @@
         });
 
       } catch (err) {
-        loading.innerHTML = '<div class="spinner"></div><span>Erro ao carregar dados.</span>';
-        loading.classList.remove("hidden");
+        // Só mostra erro se não há conteúdo anterior
+        if (!grid.children.length) {
+          loading.innerHTML = '<div class="spinner"></div><span>Erro ao carregar dados.</span>';
+          loading.classList.remove("hidden");
+        }
         btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sync-alt"></i> Atualizar';
       }
     }
 
     // ── CALENDAR ───────────────────────────────────────────
+    let calendarLoaded = false;
+
     function initCalendar() {
       const el = document.getElementById("calendar");
       calendarInstance = new FullCalendar.Calendar(el, {
@@ -330,19 +355,22 @@
         slotMinTime: "07:00:00",
         slotMaxTime: "22:00:00",
         events: async function(info, success, failure) {
-          document.getElementById("calendar-loading").classList.remove("hidden");
+          const calLoading = document.getElementById("calendar-loading");
+          // Só mostra loading fullscreen na primeira carga
+          if (!calendarLoaded) calLoading.classList.remove("hidden");
           try {
             const params = new URLSearchParams({ start: info.startStr, end: info.endStr });
             const res  = await fetch("/api/calendar?" + params);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             if (!Array.isArray(data)) throw new Error("Resposta inválida");
+            calendarLoaded = true;
             success(data);
           } catch(e) {
             console.error("Erro ao carregar eventos:", e);
             failure(e);
           } finally {
-            document.getElementById("calendar-loading").classList.add("hidden");
+            calLoading.classList.add("hidden");
           }
         },
         eventClick: function(info) {
@@ -496,11 +524,11 @@
       }
     }
 
-    loadCards();
-    setInterval(loadCards, 300000);
+    loadCards(false);
+    setInterval(() => loadCards(true), 300000);
 
     // ── HISTORY ────────────────────────────────────────────
-    async function loadHistory() {
+    async function loadHistory(isBackground = false) {
       const days    = document.getElementById("history-days").value;
       const loading = document.getElementById("history-loading");
       const table   = document.getElementById("history-table");
@@ -508,10 +536,13 @@
       const body    = document.getElementById("history-body");
       const count   = document.getElementById("history-count");
 
-      loading.classList.remove("hidden");
-      table.style.display = "none";
-      empty.style.display = "none";
-      body.innerHTML = "";
+      // Só mostra loading/limpa se é a primeira carga (sem conteúdo)
+      if (!isBackground || !body.children.length) {
+        loading.classList.remove("hidden");
+        table.style.display = "none";
+        empty.style.display = "none";
+        body.innerHTML = "";
+      }
 
       try {
         const res  = await fetch(`/api/history?days=${days}`);
@@ -519,14 +550,17 @@
         loading.classList.add("hidden");
 
         if (!rows.length) {
+          table.style.display = "none";
           empty.style.display = "block";
+          body.innerHTML = "";
           count.textContent = "";
           return;
         }
 
         count.textContent = `${rows.length} chamado(s)`;
 
-        // Agrupa por data para exibir separadores
+        // Substitui o conteúdo com os novos dados
+        body.innerHTML = "";
         let lastDate = null;
         rows.forEach(row => {
           const [y, m, d] = row.date.split("-");
@@ -556,8 +590,11 @@
         table.style.display = "table";
 
       } catch(e) {
-        loading.innerHTML = '<div class="spinner"></div><span>Erro ao carregar histórico.</span>';
-        loading.classList.remove("hidden");
+        // Só mostra erro se não há conteúdo anterior
+        if (!body.children.length) {
+          loading.innerHTML = '<div class="spinner"></div><span>Erro ao carregar histórico.</span>';
+          loading.classList.remove("hidden");
+        }
       }
     }
   </script>
