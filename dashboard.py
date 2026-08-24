@@ -9,6 +9,121 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 app = Flask(__name__, template_folder="dashboard/templates", static_folder="dashboard/static")
 
+# Salas monitoradas no dashboard
+MONITORED_ROOMS = {email.lower() for email in [
+    "salareuniaodti@agu.gov.br",
+    "videopgf-gabinete1@AGU.GOV.BR",
+    "videodpof-sede3@AGU.GOV.BR",
+    "videosgct-sede1@AGU.GOV.BR",
+    "videodti-Sede2@AGU.GOV.BR",
+    "videoceagu-sede2@AGU.GOV.BR",
+    "videosad-sede2@AGU.GOV.BR",
+    "videodgdp-sede2@AGU.GOV.BR",
+    "videosge-sede1@AGU.GOV.BR",
+    "videocsagu-sede1@AGU.GOV.BR",
+    "videosames-sede2@AGU.GOV.BR",
+    "videocodip-sede2@AGU.GOV.BR",
+    "videocgu1-sede1@AGU.GOV.BR",
+    "videocgu2-sede1@AGU.GOV.BR",
+    "videoouvidoria-sede1@AGU.GOV.BR",
+    "videoaspar-sede1@AGU.GOV.BR",
+    "videobackup-dti1@AGU.GOV.BR",
+    "videoesagu-sede2@AGU.GOV.BR",
+    "video-pu-pr@AGU.GOV.BR",
+    "video-psfpel@AGU.GOV.BR",
+    "videopgf-sede1@AGU.GOV.BR",
+    "video-psf-cco@AGU.GOV.BR",
+    "video-pf-ap@AGU.GOV.BR",
+    "video-pfsc@AGU.GOV.BR",
+    "video-cjusc@AGU.GOV.BR",
+    "videoesagu-sede3@AGU.GOV.BR",
+    "video-cju-ap@AGU.GOV.BR",
+    "video-uea-ap@AGU.GOV.BR",
+    "videoascom-sede1@AGU.GOV.BR",
+    "video-gab-esagu@AGU.GOV.BR",
+    "video-psfscz@AGU.GOV.BR",
+    "video-psf-psu-srm@AGU.GOV.BR",
+    "video-psf-lda@AGU.GOV.BR",
+    "video-uea-am@AGU.GOV.BR",
+    "video-pf-pu-cju-to@AGU.GOV.BR",
+    "video-gab1@AGU.GOV.BR",
+    "video-agu1@AGU.GOV.BR",
+    "video.sad3-spo@AGU.GOV.BR",
+    "video-agu-ro@AGU.GOV.BR",
+    "video-pf-mt@AGU.GOV.BR",
+    "videosga-sede2@AGU.GOV.BR",
+    "gabagureuniao.sgcs@AGU.GOV.BR",
+    "pru1.videoconf1@AGU.GOV.BR",
+    "videosgcs-sede1@AGU.GOV.BR",
+    "video-pu-ap@AGU.GOV.BR",
+    "videocgu3-sede1@AGU.GOV.BR",
+    "video-cxs@AGU.GOV.BR",
+    "video-cjurs@AGU.GOV.BR",
+    "video-nh@AGU.GOV.BR",
+    "video-prf4@AGU.GOV.BR",
+    "videocgau.gab-sede2@AGU.GOV.BR",
+    "videodlog-sede2@AGU.GOV.BR",
+    "prf1.videoconf3@AGU.GOV.BR",
+    "prf1.videoconf2@AGU.GOV.BR",
+    "video-psf-mga@AGU.GOV.BR",
+    "videocgu-sede1@AGU.GOV.BR",
+    "video-psf-bnu@AGU.GOV.BR",
+    "videogabagu-sede1@AGU.GOV.BR",
+    "video-pu-sc@AGU.GOV.BR",
+    "videopgfgab-sede1@AGU.GOV.BR",
+    "adjuntos.gab@AGU.GOV.BR",
+    "video.prf-spo@AGU.GOV.BR",
+    "video.eagu-spo@AGU.GOV.BR",
+    "videopgu-sede1@AGU.GOV.BR",
+    "videopnrjpgu-sede1@AGU.GOV.BR",
+    "video-psf-jve@AGU.GOV.BR",
+    "video-pf-pr@AGU.GOV.BR",
+    "video-psf-cvl@AGU.GOV.BR",
+    "video-psfsan@AGU.GOV.BR",
+    "auditorio.saddf@AGU.GOV.BR",
+    "videogab.sge-sede1@AGU.GOV.BR",
+    "videogab.coord.sede1@AGU.GOV.BR",
+    "videogab.sgeprojsed1@AGU.GOV.BR",
+    "videogab.senor@AGU.GOV.BR",
+    "video.psfsma@AGU.GOV.BR",
+    "videopgu-gab-sede1@AGU.GOV.BR",
+    "videosad2r-andar13@AGU.GOV.BR",
+    "videocjurj-andar11@AGU.GOV.BR",
+    "videopru2r-andar12@AGU.GOV.BR",
+    "videoprf2r-andar15@AGU.GOV.BR",
+    "videosgcs-gab-sede1@AGU.GOV.BR",
+    "videopgf-gabinete2@AGU.GOV.BR",
+    "videopgf-gabinete3@AGU.GOV.BR",
+    "videopgf-gabinete4@AGU.GOV.BR",
+    "dpro.sede3-video@AGU.GOV.BR",
+    "videogabcgest-sede1@AGU.GOV.BR",
+    "SalaDTI-Infraestrutura@agudf.onmicrosoft.com",
+    "sadrj.auditorio@AGU.GOV.BR",
+]}
+
+
+def get_monitored_rooms():
+    """Retorna as salas da lista de monitoramento.
+    
+    Salas encontradas na Graph API vêm com displayName.
+    Salas não encontradas são incluídas com o email como identificador.
+    """
+    all_rooms = get_rooms()
+    
+    # Monta mapa dos dados da Graph API (email -> objeto)
+    graph_map = {r.get("emailAddress", "").lower(): r for r in all_rooms}
+    
+    result = []
+    for email in MONITORED_ROOMS:
+        if email in graph_map:
+            # Sala encontrada na Graph API — usa dados completos
+            result.append(graph_map[email])
+        else:
+            # Sala não está na Graph API — inclui com dados mínimos
+            result.append({"emailAddress": email, "displayName": email.split("@")[0]})
+    
+    return result
+
 
 def fetch_room_events(room):
     email = room.get("emailAddress")
@@ -38,10 +153,21 @@ def fetch_room_events(room):
 
 
 def fetch_all_events():
-    rooms = get_rooms()
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        futures = {executor.submit(fetch_room_events, room): room for room in rooms}
-        return [f.result() for f in as_completed(futures)]
+    rooms = get_monitored_rooms()
+    results = []
+    # Limita concorrência para evitar MailboxConcurrency limit
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        # Processa em lotes para não sobrecarregar a API
+        batch_size = 10
+        for i in range(0, len(rooms), batch_size):
+            batch = rooms[i:i + batch_size]
+            futures = {executor.submit(fetch_room_events, room): room for room in batch}
+            for f in as_completed(futures):
+                results.append(f.result())
+            # Pequena pausa entre lotes para evitar throttling
+            if i + batch_size < len(rooms):
+                _time.sleep(0.5)
+    return results
 
 
 @app.route("/")
@@ -64,7 +190,7 @@ def api_calendar():
     except Exception:
         start = end = None
 
-    rooms = get_rooms()
+    rooms = get_monitored_rooms()
     events = []
     colors = [
         "#6366f1", "#22c55e", "#f59e0b", "#3b82f6",
@@ -101,10 +227,17 @@ def api_calendar():
         return result
 
     events = []
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        futures = [executor.submit(fetch_room_calendar, (i, room)) for i, room in enumerate(rooms)]
-        for f in as_completed(futures):
-            events.extend(f.result())
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        # Processa em lotes para evitar MailboxConcurrency limit
+        batch_size = 10
+        indexed_rooms = list(enumerate(rooms))
+        for i in range(0, len(indexed_rooms), batch_size):
+            batch = indexed_rooms[i:i + batch_size]
+            futures = [executor.submit(fetch_room_calendar, item) for item in batch]
+            for f in as_completed(futures):
+                events.extend(f.result())
+            if i + batch_size < len(indexed_rooms):
+                _time.sleep(0.5)
 
     return jsonify(events)
 
@@ -116,7 +249,17 @@ def api_rooms_status():
     import requests as req
 
     rooms_data = graph_get("/places/microsoft.graph.room")
-    rooms = rooms_data.get("value", [])
+    all_rooms = rooms_data.get("value", [])
+    graph_map = {r.get("emailAddress", "").lower(): r for r in all_rooms}
+    
+    # Inclui todas as salas monitoradas (com ou sem dados da Graph API)
+    rooms = []
+    for email in MONITORED_ROOMS:
+        if email in graph_map:
+            rooms.append(graph_map[email])
+        else:
+            rooms.append({"emailAddress": email, "displayName": email.split("@")[0]})
+    
     token = get_token()
 
     result = []

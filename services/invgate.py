@@ -115,15 +115,8 @@ def create_ticket(room: str, subject: str, start_time, email: str = "", organize
     local_title = local if local else room
     title = f"Validação Proativa de Sala de Reunião – {local_title} – {start_time.strftime('%d/%m/%Y %H:%M')}"
 
-    # Tenta usar o organizador da reunião como customer do chamado
-    customer_id = INVGATE_CUSTOMER_ID
-    if organizer_email:
-        found_id = find_user_by_email(organizer_email)
-        if found_id:
-            customer_id = found_id
-            print(f"   👤 Organizador encontrado no InvGate: {organizer_email} (ID {found_id})")
-        else:
-            print(f"   ℹ️  Organizador {organizer_email} não encontrado no InvGate, usando customer padrão")
+    # Usa o ticketbot como customer (mesmo ID do creator)
+    customer_id = INVGATE_CREATOR_ID
 
     # Monta informações do serviço
     local_line = f"<li><strong>Local:</strong> {local}</li>" if local else ""

@@ -1,9 +1,14 @@
 from core.graph import get
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
+import time as _time
 
 # Campos mínimos necessários — reduz payload e latência da Graph API
 _SELECT = "subject,start,end,location,showAs,isCancelled,isAllDay,organizer"
+
+# Retry para lidar com MailboxConcurrency limit
+_MAX_RETRIES = 3
+_RETRY_DELAY = 2  # segundos
 
 
 def get_rooms():
@@ -27,5 +32,14 @@ def get_events(email, start=None, end=None):
            f"&endDateTime={end_str}"
            f"&$select={_SELECT}")
 
-    data = get(url)
-    return data.get("value", [])
+    for attempt in range(_MAX_RETRIES):
+        data = get(url)
+        # Se retornou erro de concorrência, aguarda e tenta novamente
+        error = data.get("error", {})
+        if "MailboxConcurrency" in error.get("message", "") or "MailboxConcurrency" in str(data):
+            if attempt < _MAX_RETRIES - 1:
+                _time.sleep(_RETRY_DELAY * (attempt + 1))
+                continue
+        return data.get("value", [])
+
+    return []
