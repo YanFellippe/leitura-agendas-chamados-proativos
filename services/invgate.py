@@ -8,6 +8,9 @@ load_dotenv()
 # --- Configuração por ambiente ---
 INVGATE_ENV = os.getenv("INVGATE_ENV", "staging")  # "staging" ou "production"
 
+# Antecedência (em minutos) do prazo de vistoria em relação ao início da reunião
+VISIT_MINUTES_BEFORE = int(os.getenv("VISIT_MINUTES_BEFORE", "15"))
+
 INVGATE_URLS = {
     "staging":    "https://agu-staging.sd.cloud.invgate.net",
     "production": os.getenv("INVGATE_PROD_URL", ""),
@@ -119,13 +122,16 @@ def create_ticket(room: str, subject: str, start_time, email: str = "", organize
     customer_id = INVGATE_CREATOR_ID
 
     # Monta as linhas da tabela de informações (somente campos preenchidos)
+    # Cores neutras/semitransparentes para ficar legível tanto no tema claro
+    # quanto no tema escuro do InvGate (o corpo herda o fundo do tema).
     def _info_row(label: str, value: str) -> str:
         return (
             "<tr>"
-            "<td style=\"padding:8px 14px;border-bottom:1px solid #eaecef;"
-            "font-weight:600;color:#57606a;white-space:nowrap;vertical-align:top;\">"
+            "<td style=\"padding:8px 14px;border-bottom:1px solid rgba(128,128,128,.25);"
+            "font-weight:600;color:#8a94a6;white-space:nowrap;vertical-align:top;\">"
             f"{label}</td>"
-            "<td style=\"padding:8px 14px;border-bottom:1px solid #eaecef;color:#24292f;\">"
+            "<td style=\"padding:8px 14px;border-bottom:1px solid rgba(128,128,128,.25);"
+            "color:inherit;\">"
             f"{value}</td>"
             "</tr>"
         )
@@ -136,15 +142,20 @@ def create_ticket(room: str, subject: str, start_time, email: str = "", organize
     if tag:
         info_rows += _info_row("Tag", tag)
     info_rows += _info_row("Sala", room)
+
+    # Prazo da vistoria: X minutos antes do início da reunião,
+    # para que a inspeção esteja concluída quando a reunião começar.
+    from utils.time_utils import calculate_visit_time
+    prazo_vistoria = calculate_visit_time(start_time, minutes_before=VISIT_MINUTES_BEFORE)
     info_rows += _info_row(
-        "Início da reunião",
-        f"{start_time.strftime('%d/%m/%Y')} às {start_time.strftime('%H:%M')}",
+        "Finalizar vistoria até",
+        f"{prazo_vistoria.strftime('%d/%m/%Y')} às {prazo_vistoria.strftime('%H:%M')}",
     )
 
     description = (
-        "<div style=\"font-family:'Segoe UI',Arial,sans-serif;max-width:640px;color:#24292f;\">"
+        "<div style=\"font-family:'Segoe UI',Arial,sans-serif;max-width:640px;\">"
 
-        # Cabeçalho
+        # Cabeçalho (azul de marca, legível em ambos os temas)
         "<div style=\"background:#0b5fff;padding:16px 20px;border-radius:8px 8px 0 0;\">"
         "<h2 style=\"margin:0;color:#ffffff;font-size:18px;\">"
         "🛠️ Validação Proativa de Sala de Reunião</h2>"
@@ -152,23 +163,23 @@ def create_ticket(room: str, subject: str, start_time, email: str = "", organize
         "Vistoria técnica preventiva antes de agenda corporativa</p>"
         "</div>"
 
-        # Corpo
-        "<div style=\"border:1px solid #eaecef;border-top:none;border-radius:0 0 8px 8px;"
-        "padding:20px;background:#ffffff;\">"
+        # Corpo (sem fundo fixo: herda o fundo claro/escuro do InvGate)
+        "<div style=\"border:1px solid rgba(128,128,128,.3);border-top:none;"
+        "border-radius:0 0 8px 8px;padding:20px;\">"
 
         # Descrição
-        "<p style=\"margin:0 0 16px;line-height:1.6;font-size:14px;color:#424a53;\">"
+        "<p style=\"margin:0 0 16px;line-height:1.6;font-size:14px;color:inherit;\">"
         "Chamado proativo aberto com o objetivo de realizar vistoria técnica preventiva na "
         "sala de reunião antes do início de agenda corporativa, garantindo disponibilidade e "
         "funcionamento dos recursos audiovisuais e de conectividade.</p>"
 
         # Título da seção
         "<p style=\"margin:0 0 8px;font-size:13px;font-weight:700;text-transform:uppercase;"
-        "letter-spacing:.5px;color:#57606a;\">Informações do Serviço</p>"
+        "letter-spacing:.5px;color:#8a94a6;\">Informações do Serviço</p>"
 
         # Tabela de informações
-        "<table style=\"width:100%;border-collapse:collapse;font-size:14px;"
-        "border:1px solid #eaecef;border-radius:6px;overflow:hidden;\">"
+        "<table style=\"width:100%;border-collapse:collapse;font-size:14px;color:inherit;"
+        "border:1px solid rgba(128,128,128,.3);border-radius:6px;overflow:hidden;\">"
         f"{info_rows}"
         "</table>"
 

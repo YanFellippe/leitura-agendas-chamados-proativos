@@ -1,7 +1,7 @@
 [
   {
     "tag_name": "REDE DE DADOS-DF-SEDE3",
-    "local": "DTI",
+    "local": "AGU DF - Sede III - DTI",
     "email": "salareuniaodti@agu.gov.br"
   },
   {
@@ -11,7 +11,7 @@
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE3",
-    "local": "DPOF",
+    "local": "AGU DF - Sede III - DPOF",
     "email": "videodpof-sede3@AGU.GOV.BR"
   },
   {
@@ -21,72 +21,72 @@
   },
   {
     "tag_name": " ",
-    "local": "DTI",
+    "local": "AGU DF - Sede II - DTI",
     "email": "videodti-Sede2@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
-    "local": "CEAGU",
-    "email": "videocaegu-sede2@AGU.GOV.BR"
+    "local": "AGU DF - Sede II - CEAGU",
+    "email": "videoceagu-sede2@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
-    "local": "SAD",
+    "local": "AGU DF - Sede II - SAD",
     "email": "videosad-sede2@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
-    "local": "DGDP",
+    "local": "AGU DF - Sede II - DGDP",
     "email": "videodgdp-sede2@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
-    "local": "SGE",
+    "local": "AGU DF - Sede I - SGE",
     "email": "videosge-sede1@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
-    "local": "CSAGU",
-    "email": "videossames-sede1@AGU.GOV.BR"
+    "local": "AGU DF - Sede I - CSAGU",
+    "email": "videocsagu-sede1@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
-    "local": "SAMES",
-    "email": "videossames-sede2@AGU.GOV.BR"
+    "local": "AGU DF - Sede II - SAMES",
+    "email": "videosames-sede2@AGU.GOV.BR"
   },
   {
     "tag_name": " ",
-    "local": "CODIP",
+    "local": "AGU DF - Sede II - CODIP",
     "email": "videocodip-sede2@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
-    "local": "CGU/DF",
+    "local": "AGU DF - Sede I - CGU/DF",
     "email": "videocgu1-sede1@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
-    "local": "CGU/DF",
+    "local": "AGU DF - Sede I - CGU/DF",
     "email": "videocgu2-sede1@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
-    "local": "OUVIDORIA",
-    "email": "videoouvidoria-sede1@ACU.GOV.BR"
+    "local": "AGU DF - Sede I - OUVIDORIA",
+    "email": "videoouvidoria-sede1@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
-    "local": "ASPAR",
+    "local": "AGU DF - Sede I - ASPAR",
     "email": "videoaspar-sede1@AGU.GOV.BR"
   },
   {
     "tag_name": " ",
     "local": "DTI",
-    "email": "videobackup-dti@AGU.GOV.BR"
+    "email": "videobackup-dti1@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
-    "local": "ESAGU",
+    "local": "AGU DF - Sede II - ESAGU",
     "email": "videoesagu-sede2@AGU.GOV.BR"
   },
   {
@@ -101,7 +101,7 @@
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
-    "local": "PGF",
+    "local": "AGU DF - Sede I - PGF",
     "email": "videopgf-sede1@AGU.GOV.BR"
   },
   {
@@ -122,11 +122,11 @@
   {
     "tag_name": " ",
     "local": " ",
-    "email": "video-cjuosc@AGU.GOV.BR"
+    "email": "video-cjusc@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE3",
-    "local": "ESAGU",
+    "local": "AGU DF - Sede III - ESAGU",
     "email": "videoesagu-sede3@AGU.GOV.BR"
   },
   {
@@ -137,11 +137,11 @@
   {
     "tag_name": " ",
     "local": "PU/PA",
-    "email": "video-usa-ap@AGU.GOV.BR"
+    "email": "video-uea-ap@AGU.GOV.BR"
   },
   {
     "tag_name": " ",
-    "local": "ASCOM",
+    "local": "AGU DF - Sede I - ASCOM",
     "email": "videoascom-sede1@AGU.GOV.BR"
   },
   {
@@ -167,7 +167,7 @@
   {
     "tag_name": " ",
     "local": " ",
-    "email": "video-usa-am@AGU.GOV.BR"
+    "email": "video-uea-am@AGU.GOV.BR"
   },
   {
     "tag_name": " ",
@@ -187,7 +187,7 @@
   {
     "tag_name": " ",
     "local": " ",
-    "email": "video.ssd3-spo@AGU.GOV.BR"
+    "email": "video.sad3-spo@AGU.GOV.BR"
   },
   {
     "tag_name": " ",
@@ -202,7 +202,7 @@
   {
     "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
     "local": "GABAGU",
-    "email": "gabagureunias.sgcs@AGU.GOV.BR"
+    "email": "gabagureuniao.sgcs@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
@@ -241,12 +241,12 @@
   },
   {
     "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
-    "local": "CGAU/GAB",
+    "local": "AGU DF - Sede II - CGAU/GAB",
     "email": "videocgau.gab-sede2@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
-    "local": "DLOG",
+    "local": "AGU DF - Sede II - DLOG",
     "email": "videodlog-sede2@AGU.GOV.BR"
   },
   {
@@ -266,7 +266,7 @@
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
-    "local": "CGU",
+    "local": "AGU DF - Sede I - CGU",
     "email": "videocgu-sede1@AGU.GOV.BR"
   },
   {
@@ -276,7 +276,7 @@
   },
   {
     "tag_name": " ",
-    "local": "GABAGU",
+    "local": "AGU DF - Sede I - GABAGU",
     "email": "videogabagu-sede1@AGU.GOV.BR"
   },
   {
@@ -286,7 +286,7 @@
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
-    "local": "PGF/GAB",
+    "local": "AGU DF - Sede I - PGF/GAB",
     "email": "videopgfgab-sede1@AGU.GOV.BR"
   },
   {
@@ -297,7 +297,7 @@
   {
     "tag_name": " ",
     "local": " ",
-    "email": "video.prf.spo@AGU.GOV.BR"
+    "email": "video.prf-spo@AGU.GOV.BR"
   },
   {
     "tag_name": " ",
@@ -306,13 +306,13 @@
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
-    "local": "PGU",
+    "local": "AGU DF - Sede I - PGU",
     "email": "videopgu-sede1@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
-    "local": "PNEP/PGU",
-    "email": "videoprnjpgu-sede1@AGU.GOV.BR"
+    "local": "AGU DF - Sede I - PNEP/PGU",
+    "email": "videopnrjpgu-sede1@AGU.GOV.BR"
   },
   {
     "tag_name": " ",
@@ -327,7 +327,7 @@
   {
     "tag_name": " ",
     "local": " ",
-    "email": "video-psf-cvt@AGU.GOV.BR"
+    "email": "video-psf-cvl@AGU.GOV.BR"
   },
   {
     "tag_name": " ",
@@ -337,7 +337,7 @@
   {
     "tag_name": " ",
     "local": " ",
-    "email": "auditorio.sede8@AGU.GOV.BR"
+    "email": "auditorio.saddf@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
@@ -362,22 +362,22 @@
   {
     "tag_name": " ",
     "local": " ",
-    "email": "video.psfsrna@AGU.GOV.BR"
+    "email": "video.psfsma@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
     "local": " ",
-    "email": "videopgu-gab.sede1@AGU.GOV.BR"
+    "email": "videopgu-gab-sede1@AGU.GOV.BR"
   },
   {
     "tag_name": " ",
     "local": " ",
-    "email": "videossed2r-andar1@AGU.GOV.BR"
+    "email": "videosad2r-andar13@AGU.GOV.BR"
   },
   {
     "tag_name": " ",
     "local": " ",
-    "email": "videocjurj.andar11@AGU.GOV.BR"
+    "email": "videocjurj-andar11@AGU.GOV.BR"
   },
   {
     "tag_name": " ",
@@ -406,12 +406,12 @@
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE3",
-    "local": " ",
+    "local": "AGU DF - Sede III - DPRO",
     "email": "dpro.sede3-video@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE1",
-    "local": "GABAGU",
+    "local": "AGU DF - Sede I - GABAGU",
     "email": "videogabcgest-sede1@AGU.GOV.BR"
   },
   {

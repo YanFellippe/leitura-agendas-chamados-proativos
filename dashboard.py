@@ -370,13 +370,52 @@ def api_force_ticket():
 
     now = datetime.now(ZoneInfo("America/Sao_Paulo"))
 
+    # Busca a próxima reunião de hoje da sala e usa o horário de início dela
+    # como base da vistoria (em vez do horário do clique).
+    meeting_start = None
+    meeting_subject = None
+    meeting_organizer_email = organizer_email
+    if room_email:
+        try:
+            events = get_events(room_email)
+        except Exception:
+            events = []
+
+        candidates = []
+        for event in events:
+            if not is_valid_meeting(event):
+                continue
+            ev_start = to_local_time(
+                event["start"]["dateTime"], event["start"].get("timeZone", "UTC")
+            )
+            candidates.append((ev_start, event))
+
+        # Prioriza reuniões que ainda não começaram; senão, pega a mais próxima do dia
+        future = sorted((c for c in candidates if c[0] >= now), key=lambda c: c[0])
+        chosen = future[0] if future else (
+            min(candidates, key=lambda c: abs((c[0] - now).total_seconds())) if candidates else None
+        )
+        if chosen:
+            meeting_start, ev = chosen
+            meeting_subject = ev.get("subject")
+            meeting_organizer_email = (
+                organizer_email
+                or ev.get("organizer", {}).get("emailAddress", {}).get("address", "")
+            )
+
+    if meeting_start is None:
+        return jsonify({
+            "error": "Nenhuma reunião encontrada hoje para esta sala. "
+                     "A vistoria proativa é vinculada a uma reunião agendada."
+        }), 404
+
     try:
         result = create_ticket(
             room=room_name,
-            subject="Vistoria manual solicitada via dashboard",
-            start_time=now,
+            subject=meeting_subject or "Vistoria manual solicitada via dashboard",
+            start_time=meeting_start,
             email=room_email,
-            organizer_email=organizer_email,
+            organizer_email=meeting_organizer_email,
         )
         # Registra no controle diário
         control = DailyControl()
