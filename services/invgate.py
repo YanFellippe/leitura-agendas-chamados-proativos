@@ -118,28 +118,62 @@ def create_ticket(room: str, subject: str, start_time, email: str = "", organize
     # Usa o ticketbot como customer (mesmo ID do creator)
     customer_id = INVGATE_CREATOR_ID
 
-    # Monta informações do serviço
-    local_line = f"<li><strong>Local:</strong> {local}</li>" if local else ""
-    tag_line   = f"<li><strong>Tag:</strong> {tag}</li>" if tag else ""
-    sala_line  = f"<li><strong>Sala:</strong> {room}</li>"
-    recurso_line = f"<li><strong>Recurso:</strong> {email}</li>" if email else ""
-    responsavel_line = f"<li><strong>Responsável pela reunião:</strong> {organizer_name}</li>" if organizer_name else ""
-    inicio_line = f"<li><strong>Início da reunião:</strong> {start_time.strftime('%d/%m/%Y')} às {start_time.strftime('%H:%M')}</li>"
+    # Monta as linhas da tabela de informações (somente campos preenchidos)
+    def _info_row(label: str, value: str) -> str:
+        return (
+            "<tr>"
+            "<td style=\"padding:8px 14px;border-bottom:1px solid #eaecef;"
+            "font-weight:600;color:#57606a;white-space:nowrap;vertical-align:top;\">"
+            f"{label}</td>"
+            "<td style=\"padding:8px 14px;border-bottom:1px solid #eaecef;color:#24292f;\">"
+            f"{value}</td>"
+            "</tr>"
+        )
+
+    info_rows = ""
+    if local:
+        info_rows += _info_row("Local", local)
+    if tag:
+        info_rows += _info_row("Tag", tag)
+    info_rows += _info_row("Sala", room)
+    info_rows += _info_row(
+        "Início da reunião",
+        f"{start_time.strftime('%d/%m/%Y')} às {start_time.strftime('%H:%M')}",
+    )
 
     description = (
-        f"<p>Chamado proativo aberto com o objetivo de realizar vistoria técnica preventiva "
-        f"na sala de reunião antes do início de agenda corporativa, garantindo disponibilidade "
-        f"e funcionamento dos recursos audiovisuais e de conectividade.</p>"
-        f"<br>"
-        f"<p><strong>Informações do Serviço</strong></p>"
-        f"<ul>"
-        f"{local_line}"
-        f"{tag_line}"
-        f"{sala_line}"
-        f"{recurso_line}"
-        f"{responsavel_line}"
-        f"{inicio_line}"
-        f"</ul>"
+        "<div style=\"font-family:'Segoe UI',Arial,sans-serif;max-width:640px;color:#24292f;\">"
+
+        # Cabeçalho
+        "<div style=\"background:#0b5fff;padding:16px 20px;border-radius:8px 8px 0 0;\">"
+        "<h2 style=\"margin:0;color:#ffffff;font-size:18px;\">"
+        "🛠️ Validação Proativa de Sala de Reunião</h2>"
+        "<p style=\"margin:4px 0 0;color:#dbe7ff;font-size:13px;\">"
+        "Vistoria técnica preventiva antes de agenda corporativa</p>"
+        "</div>"
+
+        # Corpo
+        "<div style=\"border:1px solid #eaecef;border-top:none;border-radius:0 0 8px 8px;"
+        "padding:20px;background:#ffffff;\">"
+
+        # Descrição
+        "<p style=\"margin:0 0 16px;line-height:1.6;font-size:14px;color:#424a53;\">"
+        "Chamado proativo aberto com o objetivo de realizar vistoria técnica preventiva na "
+        "sala de reunião antes do início de agenda corporativa, garantindo disponibilidade e "
+        "funcionamento dos recursos audiovisuais e de conectividade.</p>"
+
+        # Título da seção
+        "<p style=\"margin:0 0 8px;font-size:13px;font-weight:700;text-transform:uppercase;"
+        "letter-spacing:.5px;color:#57606a;\">Informações do Serviço</p>"
+
+        # Tabela de informações
+        "<table style=\"width:100%;border-collapse:collapse;font-size:14px;"
+        "border:1px solid #eaecef;border-radius:6px;overflow:hidden;\">"
+        f"{info_rows}"
+        "</table>"
+
+        "</div>"
+        "</div>"
     )
 
     payload = {

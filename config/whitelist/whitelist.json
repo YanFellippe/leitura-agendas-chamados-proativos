@@ -1,82 +1,427 @@
 [
   {
-    "tag_name": " ",
-    "local": " ",
-    "email": "CGPS61f666071776089899616@agudf.onmicrosoft.com"
-  },
-  {
-    "tag_name": " ",
-    "local": " ",
-    "email": "DPOF6e814c1b1776089878929@agudf.onmicrosoft.com"
-  },
-  {
-    "tag_name": " ",
-    "local": " ",
-    "email": "CGOF34c01ef11776089854146@agudf.onmicrosoft.com"
-  },
-  {
-    "tag_name": " ",
-    "local": " ",
-    "email": "SaladeReunio3dfb278131776088921603@agudf.onmicrosoft.com"
-  },
-  {
-    "tag_name": " ",
-    "local": " ",
-    "email": "SaladeReunio2a83656731776088877987@agudf.onmicrosoft.com"
-  },
-  {
-    "tag_name": " ",
-    "local": " ",
-    "email": "SaladeReunio15f3606c91776088778822@agudf.onmicrosoft.com"
-  },
-  {
-    "tag_name": " ",
-    "local": " ",
-    "email": "Saladereunioduplad616cb901776088484946@agudf.onmicrosoft.com"
-  },
-  {
-    "tag_name": " ",
-    "local": " ",
-    "email": "sala810@agu.gov.br"
-  },
-  {
-    "tag_name": " ",
-    "local": " ",
-    "email": "salareuniao.gabagu@agu.gov.br"
-  },
-  {
-    "tag_name": " ",
-    "local": " ",
-    "email": "conf.room@agu.gov.br"
-  },
-  {
-    "tag_name": " ",
-    "local": " ",
-    "email": "pfednit.ma@agu.gov.br"
-  },
-  {
     "tag_name": "REDE DE DADOS-DF-SEDE3",
-    "local": " ",
-    "email": "dti.salateste@agu.gov.br"
-  },
-  {
-    "tag_name": "REDE DE DADOS-DF-SEDE3",
-    "local": "Brasília DF - AGU Sede III - DTI",
+    "local": "DTI",
     "email": "salareuniaodti@agu.gov.br"
   },
   {
+    "tag_name": " ",
+    "local": "PGF",
+    "email": "videopgf-gabinete1@AGU.GOV.BR"
+  },
+  {
     "tag_name": "REDE DE DADOS-DF-SEDE3",
+    "local": "DPOF",
+    "email": "videodpof-sede3@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": "SGCT",
+    "email": "videosgct-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "DTI",
+    "email": "videodti-Sede2@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
+    "local": "CEAGU",
+    "email": "videocaegu-sede2@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
+    "local": "SAD",
+    "email": "videosad-sede2@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
+    "local": "DGDP",
+    "email": "videodgdp-sede2@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": "SGE",
+    "email": "videosge-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": "CSAGU",
+    "email": "videossames-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
+    "local": "SAMES",
+    "email": "videossames-sede2@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "CODIP",
+    "email": "videocodip-sede2@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": "CGU/DF",
+    "email": "videocgu1-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": "CGU/DF",
+    "email": "videocgu2-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": "OUVIDORIA",
+    "email": "videoouvidoria-sede1@ACU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": "ASPAR",
+    "email": "videoaspar-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "DTI",
+    "email": "videobackup-dti@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
+    "local": "ESAGU",
+    "email": "videoesagu-sede2@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PU/PR",
+    "email": "video-pu-pr@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PSF/PEL",
+    "email": "video-psfpel@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": "PGF",
+    "email": "videopgf-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PSF/CCO",
+    "email": "video-psf-cco@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "Procuradoria Federal no Estado do no Amapá",
+    "email": "video-pf-ap@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PF/SC",
+    "email": "video-pfsc@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
     "local": " ",
-    "email": "videodpof-sede3@agu.gov.br"
+    "email": "video-cjuosc@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE3",
+    "local": "ESAGU",
+    "email": "videoesagu-sede3@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "Consultoria Jurídica da União no Estado do Amapá",
+    "email": "video-cju-ap@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PU/PA",
+    "email": "video-usa-ap@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "ASCOM",
+    "email": "videoascom-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "GAB-ESAGU",
+    "email": "video-gab-esagu@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PSF/SCZ",
+    "email": "video-psfscz@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PSF-SRM",
+    "email": "video-psf-psu-srm@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PSF-Londrina",
+    "email": "video-psf-lda@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "video-usa-am@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "video-pf-pu-cju-to@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "video-gab1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "video-agu1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "video.ssd3-spo@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "video-agu-ro@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PF/MT",
+    "email": "video-pf-mt@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
+    "local": "GABAGU",
+    "email": "gabagureunias.sgcs@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": "SGCS",
+    "email": "pru1.videoconf1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PU/AP",
+    "email": "video-pu-ap@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "CGU/DF",
+    "email": "videocgu3-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PSF/CXS",
+    "email": "video-cxs@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "CIU/RS",
+    "email": "video-cjurs@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PSF/NHO",
+    "email": "video-nh@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PRF4",
+    "email": "video-prf4@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
+    "local": "CGAU/GAB",
+    "email": "videocgau.gab-sede2@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-PRU/PRF-SEDE2",
+    "local": "DLOG",
+    "email": "videodlog-sede2@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "prf1.videoconf3@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "prf1.videoconf2@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PSF-MGA",
+    "email": "video-psf-mga@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": "CGU",
+    "email": "videocgu-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PSF/BNU",
+    "email": "video-psf-bnu@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "GABAGU",
+    "email": "videogabagu-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PU-SC",
+    "email": "video-pu-sc@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": "PGF/GAB",
+    "email": "videopgfgab-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "GABAGU",
+    "email": "adjuntos.gab@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "video.prf.spo@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "video.eagu-spo@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": "PGU",
+    "email": "videopgu-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": "PNEP/PGU",
+    "email": "videoprnjpgu-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PSF/JVE",
+    "email": "video-psf-jve@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PF/PR",
+    "email": "video-pf-pr@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "video-psf-cvt@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PSF/SAN",
+    "email": "video-psfsan@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "auditorio.sede8@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": " ",
+    "email": "videogab.sge-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": " ",
+    "email": "videogab.coord.sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "videogab.sgeprojsed1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "videogab.senor@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "video.psfsrna@AGU.GOV.BR"
+  },
+  {
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": " ",
+    "email": "videopgu-gab.sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "videossed2r-andar1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "videocjurj.andar11@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "videopru2r-andar12@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "videoprf2r-andar15@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "GAB-SGCS",
+    "email": "videosgcs-gab-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PGF-GAB",
+    "email": "videopgf-gabinete2@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
+    "local": "PGF-GAB",
+    "email": "videopgf-gabinete4@AGU.GOV.BR"
   },
   {
     "tag_name": "REDE DE DADOS-DF-SEDE3",
     "local": " ",
-    "email": "videoesagu-sede3@agu.gov.br"
+    "email": "dpro.sede3-video@AGU.GOV.BR"
   },
   {
-    "tag_name": "REDE DE DADOS-DF-SEDE3",
+    "tag_name": "REDE DE DADOS-DF-SEDE1",
+    "local": "GABAGU",
+    "email": "videogabcgest-sede1@AGU.GOV.BR"
+  },
+  {
+    "tag_name": " ",
     "local": " ",
-    "email": "dpro.sede3-video@agu.gov.br"
+    "email": "SalaDTI-Infraestrutura@agudf.onmicrosoft.com"
+  },
+  {
+    "tag_name": " ",
+    "local": " ",
+    "email": "sacirj.auditorio@AGU.GOV.BR"
   }
 ]

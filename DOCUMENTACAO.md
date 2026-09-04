@@ -92,10 +92,12 @@ O chamado é criado utilizando parâmetros fixos, previamente configurados por m
 Para o correto funcionamento da automação, as seguintes condições devem ser integralmente atendidas:
 
 **Configuração de variáveis de ambiente:** Devem estar devidamente configuradas as seguintes variáveis:
+
 - `CLIENT_ID`, `CLIENT_SECRET`, `TENANT_ID` (integração com Microsoft Graph);
 - `INVGATE_USERNAME`, `INVGATE_API_KEY`, `INVGATE_CUSTOMER_ID`, `INVGATE_CREATOR_ID`, `INVGATE_CATEGORY_ID`.
 
 **Permissões no Azure AD:** O registro da aplicação (App Registration) deve possuir, no mínimo, as seguintes permissões de aplicativo (Application):
+
 - `Calendars.Read`;
 - `Place.Read.All`.
 
@@ -113,17 +115,18 @@ Para o correto funcionamento da automação, as seguintes condições devem ser 
 
 **Bibliotecas ou dependências:**
 
-| Biblioteca | Finalidade |
-|---|---|
-| `requests` | Requisições HTTP para as APIs do Microsoft Graph e InvGate |
-| `msal` | Autenticação OAuth2 Client Credentials com o Azure AD |
-| `python-dotenv` | Leitura das variáveis de ambiente do arquivo `.env` |
-| `zoneinfo` | Conversão de fusos horários (UTC → America/Sao_Paulo) |
-| `flask` | Servidor web do dashboard de monitoramento |
+| Biblioteca        | Finalidade                                                   |
+| ----------------- | ------------------------------------------------------------ |
+| `requests`      | Requisições HTTP para as APIs do Microsoft Graph e InvGate |
+| `msal`          | Autenticação OAuth2 Client Credentials com o Azure AD      |
+| `python-dotenv` | Leitura das variáveis de ambiente do arquivo `.env`       |
+| `zoneinfo`      | Conversão de fusos horários (UTC → America/Sao_Paulo)     |
+| `flask`         | Servidor web do dashboard de monitoramento                   |
 
 ### APIs envolvidas
 
 **Microsoft Graph API:**
+
 - Endpoint base: `https://graph.microsoft.com/v1.0`
 - Autenticação: OAuth 2.0, fluxo Client Credentials via Azure Active Directory (Azure AD)
 - Permissões necessárias (tipo Aplicativo):
@@ -134,6 +137,7 @@ Para o correto funcionamento da automação, as seguintes condições devem ser 
   - `/users/{email}/calendarView` — consulta de eventos de calendário por sala
 
 **InvGate Service Management API:**
+
 - Endpoint base: `https://agu-staging.sd.cloud.invgate.net/api/v1/`
 - Autenticação: Basic Authentication (username + API Key)
 - Endpoints utilizados:
@@ -146,16 +150,17 @@ Para o correto funcionamento da automação, as seguintes condições devem ser 
 A aplicação pode ser executada em qualquer servidor ou estação de trabalho que possua o ambiente Python na versão 3.9 ou superior, bem como acesso à internet para comunicação com as APIs externas. Não há necessidade de banco de dados ou infraestrutura dedicada, uma vez que o controle de estado é realizado localmente por meio de arquivos.
 
 Para execução contínua em ambiente de produção, recomenda-se:
+
 - `systemd` ou `cron`, em sistemas operacionais Linux;
 - Task Scheduler, em sistemas operacionais Windows.
 
 ### Arquivos utilizados
 
-| Arquivo | Tipo | Descrição |
-|---|---|---|
-| `.env` | Variáveis de ambiente | Armazena credenciais e parâmetros de configuração sensíveis da aplicação |
-| `.daily_tickets.json` | JSON | Controle local de chamados abertos por sala e por dia |
-| `requirements.txt` | Texto | Lista de dependências necessárias para execução do projeto em Python |
+| Arquivo                 | Tipo                   | Descrição                                                                    |
+| ----------------------- | ---------------------- | ------------------------------------------------------------------------------ |
+| `.env`                | Variáveis de ambiente | Armazena credenciais e parâmetros de configuração sensíveis da aplicação |
+| `.daily_tickets.json` | JSON                   | Controle local de chamados abertos por sala e por dia                          |
+| `requirements.txt`    | Texto                  | Lista de dependências necessárias para execução do projeto em Python       |
 
 ---
 
@@ -163,13 +168,13 @@ Para execução contínua em ambiente de produção, recomenda-se:
 
 ### O que acontece em caso de falha
 
-| Cenário | Comportamento do Sistema |
-|---|---|
-| Sala com mailbox inativa ou ambiente on-premise (erro HTTP 404) | Retry interrompido imediatamente; sala desconsiderada e processamento segue para a próxima |
-| Falha na autenticação com o Azure AD | Exceção lançada com registro de erro no terminal; ciclo de execução interrompido |
-| Falha na criação de chamado no InvGate (HTTP 4xx ou 5xx) | Erro capturado e registrado no terminal; sala não registrada no controle local, permitindo nova tentativa no próximo ciclo |
-| Sala sem eventos válidos após filtragem | Nenhuma ação executada; registrado apenas log informativo no terminal |
-| Variáveis de ambiente ausentes ou inválidas | Erro em tempo de execução ao utilizar valores nulos (`None`) nas requisições às APIs |
+| Cenário                                                        | Comportamento do Sistema                                                                                                     |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Sala com mailbox inativa ou ambiente on-premise (erro HTTP 404) | Retry interrompido imediatamente; sala desconsiderada e processamento segue para a próxima                                  |
+| Falha na autenticação com o Azure AD                          | Exceção lançada com registro de erro no terminal; ciclo de execução interrompido                                        |
+| Falha na criação de chamado no InvGate (HTTP 4xx ou 5xx)      | Erro capturado e registrado no terminal; sala não registrada no controle local, permitindo nova tentativa no próximo ciclo |
+| Sala sem eventos válidos após filtragem                       | Nenhuma ação executada; registrado apenas log informativo no terminal                                                      |
+| Variáveis de ambiente ausentes ou inválidas                   | Erro em tempo de execução ao utilizar valores nulos (`None`) nas requisições às APIs                                  |
 
 ### Política de retry
 
@@ -200,12 +205,12 @@ O correto funcionamento da automação pode ser validado por meio dos seguintes 
 
 ### Endpoints do dashboard
 
-| Endpoint | Descrição |
-|---|---|
-| `GET /` | Interface web do dashboard |
-| `GET /api/rooms` | Lista salas com reuniões do dia e status em tempo real |
-| `GET /api/calendar` | Eventos formatados para o calendário (FullCalendar) |
-| `GET /api/rooms/status` | Status de acesso de cada sala via Graph API |
+| Endpoint                  | Descrição                                             |
+| ------------------------- | ------------------------------------------------------- |
+| `GET /`                 | Interface web do dashboard                              |
+| `GET /api/rooms`        | Lista salas com reuniões do dia e status em tempo real |
+| `GET /api/calendar`     | Eventos formatados para o calendário (FullCalendar)    |
+| `GET /api/rooms/status` | Status de acesso de cada sala via Graph API             |
 
 ### Logs disponíveis
 
@@ -221,13 +226,13 @@ Atualmente, não há persistência de logs em arquivo. As informações são exi
 
 ## 8. Riscos
 
-| Ponto de Falha | Dependência Crítica | Impacto |
-|---|---|---|
-| Token do Azure AD expirado ou revogado | Microsoft Graph API | Interrupção total da consulta de salas e ausência de criação de chamados |
-| Credencial Basic Auth do InvGate inválida ou revogada | InvGate API | Falha na criação de chamados, mantendo apenas a etapa de consulta ativa |
-| Salas migradas para ambiente on-premise | Microsoft 365 (Cloud) | Salas tornam-se indisponíveis para a integração |
-| Arquivo `.daily_tickets.json` corrompido ou sem permissão de escrita | Sistema de arquivos local | Possibilidade de geração de chamados duplicados no mesmo dia |
-| Indisponibilidade da máquina de execução | Infraestrutura local | Interrupção completa da automação, sem mecanismos de alerta |
+| Ponto de Falha                                                          | Dependência Crítica     | Impacto                                                                       |
+| ----------------------------------------------------------------------- | ------------------------- | ----------------------------------------------------------------------------- |
+| Token do Azure AD expirado ou revogado                                  | Microsoft Graph API       | Interrupção total da consulta de salas e ausência de criação de chamados |
+| Credencial Basic Auth do InvGate inválida ou revogada                  | InvGate API               | Falha na criação de chamados, mantendo apenas a etapa de consulta ativa     |
+| Salas migradas para ambiente on-premise                                 | Microsoft 365 (Cloud)     | Salas tornam-se indisponíveis para a integração                            |
+| Arquivo `.daily_tickets.json` corrompido ou sem permissão de escrita | Sistema de arquivos local | Possibilidade de geração de chamados duplicados no mesmo dia                |
+| Indisponibilidade da máquina de execução                             | Infraestrutura local      | Interrupção completa da automação, sem mecanismos de alerta               |
 
 ---
 
