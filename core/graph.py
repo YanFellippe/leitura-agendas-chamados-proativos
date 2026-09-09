@@ -28,7 +28,7 @@ def get(url, params=None, max_retries=3):
             )
         except requests.RequestException as e:
             # Erro de rede/timeout: tenta novamente com backoff
-            print(f"⚠ Erro de rede ({attempt}/{max_retries}): {e}")
+            print(f"[AVISO] Erro de rede ({attempt}/{max_retries}): {e}")
             if attempt < max_retries:
                 time.sleep(2)
                 continue
@@ -39,24 +39,24 @@ def get(url, params=None, max_retries=3):
         # 429: throttling — respeita o Retry-After e tenta de novo
         if status == 429:
             wait = int(response.headers.get("Retry-After", 5))
-            print(f"⏳ Rate limit — esperando {wait}s...")
+            print(f"[AVISO] Rate limit - esperando {wait}s...")
             time.sleep(wait)
             continue
 
         # 404: recurso inexistente/inacessível (ex.: caixa on-premise ou
         # sala que não existe no tenant). Não adianta repetir.
         if status == 404:
-            print(f"   ➤ Sala inexistente ou inacessível no Graph, ignorando. [{url}]")
+            print(f"       Sala inexistente ou inacessível no Graph, ignorando. [{url}]")
             break
 
         # 401/403: problema de autenticação/permissão — repetir não resolve
         if status in (401, 403):
-            print(f"🔒 Sem autorização (HTTP {status}) para {url}: {response.text}")
+            print(f"[ERRO] Sem autorização (HTTP {status}) para {url}: {response.text}")
             break
 
         # 5xx: falha transitória do servidor — vale tentar de novo
         if status in _RETRIABLE_STATUS:
-            print(f"⚠ Erro do servidor HTTP {status} ({attempt}/{max_retries}) em {url}")
+            print(f"[AVISO] Erro do servidor HTTP {status} ({attempt}/{max_retries}) em {url}")
             if attempt < max_retries:
                 time.sleep(2)
                 continue
@@ -64,7 +64,7 @@ def get(url, params=None, max_retries=3):
 
         # Demais erros de cliente (4xx não tratados acima)
         if status >= 400:
-            print(f"⚠ Erro HTTP {status} em {url}: {response.text}")
+            print(f"[ERRO] Erro HTTP {status} em {url}: {response.text}")
             break
 
         # Sucesso: acumula resultados e segue a paginação, se houver

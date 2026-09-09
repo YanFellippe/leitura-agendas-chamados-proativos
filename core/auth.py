@@ -38,7 +38,7 @@ def get_token():
         if _cached_token and time.time() < (_token_expires_at - _EXPIRY_MARGIN):
             return _cached_token
 
-        print("🔐 Obtendo novo token...")
+        print("[INFO] Obtendo novo token...")
         app = _get_app()
         result = app.acquire_token_for_client(
             ["https://graph.microsoft.com/.default"]

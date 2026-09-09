@@ -1,0 +1,46 @@
+<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #000; background-color: #fff;">
+
+    <p>Prezado(a) <strong>{usuario}</strong>,</p>
+
+    <p>O Departamento de Tecnologia da Informação (DTI), por meio de suas ferramentas de monitoramento e automação, identificou uma reunião agendada para esta sala. Foi aberto este chamado proativo para a realização de <strong>vistoria técnica preventiva</strong> dos equipamentos de videoconferência antes do início da agenda corporativa, garantindo a disponibilidade e o funcionamento dos recursos audiovisuais e de conectividade.</p>
+
+    <hr style="border: 1px solid #ccc; margin: 20px 0;">
+
+    <h3 style="border-bottom: 2px solid #000; padding-bottom: 5px;">Informações do Serviço</h3>
+
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr><td style="width: 30%; padding: 5px; font-weight: bold; background-color: #f0f0f0;">Local:</td><td style="padding: 5px;">{local}</td></tr>
+        <tr><td style="padding: 5px; font-weight: bold; background-color: #f0f0f0;">Rede de Dados:</td><td style="padding: 5px;">{rede_dados}</td></tr>
+        <tr><td style="padding: 5px; font-weight: bold; background-color: #f0f0f0;">Usuário:</td><td style="padding: 5px;">{usuario}</td></tr>
+        <tr><td style="padding: 5px; font-weight: bold; background-color: #f0f0f0;">Sala:</td><td style="padding: 5px;">{sala}</td></tr>
+        <tr><td style="padding: 5px; font-weight: bold; background-color: #f0f0f0;">Finalizar vistoria até:</td><td style="padding: 5px;">{finalizar_vistoria_ate}</td></tr>
+    </table>
+
+    <h3 style="border-bottom: 2px solid #000; padding-bottom: 5px; margin-top: 24px;">Procedimento de Testes &ndash; Equipamentos de Videoconferência</h3>
+
+    <p style="font-weight: bold; margin-bottom: 4px;">Acesso à Reunião</p>
+    <ul style="margin-top: 0;">
+        <li><strong>Por link:</strong> clique no link da reunião e, nas opções de ingresso, selecione:
+            <ul>
+                <li>Áudio da sala (quando houver dispositivo, ex.: Polycom Studio).</li>
+                <li>Áudio do computador (quando não houver dispositivo dedicado).</li>
+            </ul>
+        </li>
+        <li><strong>Por convite:</strong> acesse o menu Calendário no Microsoft Teams, localize a reunião e clique em Entrar.</li>
+    </ul>
+
+    <p style="font-weight: bold; margin-bottom: 4px;">Validações</p>
+    <ul style="margin-top: 0;">
+        <li><strong>Imagem da câmera:</strong> verificar se a câmera acompanha o movimento do palestrante.</li>
+        <li><strong>Áudio e vídeo:</strong> confirmar se estão sendo capturados pela câmera/sala (e não por dispositivos adicionais como notebook).</li>
+        <li><strong>Teclado:</strong> validar se o teclado está funcional.</li>
+        <li><strong>Mouse:</strong> validar se o mouse está funcional.</li>
+        <li><strong>Monitor:</strong> validar se o monitor apresenta imagem nítida.</li>
+    </ul>
+
+    <div style="margin-top: 20px; padding: 10px; background-color: #f0f0f0; border-left: 5px solid #000;">
+        <strong>Detecção:</strong> {deteccao}<br>
+        <strong>Nota:</strong> Este chamado foi gerado automaticamente pelo sistema de monitoramento.
+    </div>
+
+</div>

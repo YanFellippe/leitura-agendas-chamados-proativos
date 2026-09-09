@@ -23,7 +23,7 @@ def load_rooms() -> list[str]:
 
         _cache["rooms"] = graph_rooms
         _cache["ts"] = _time.time()
-        print(f"🏢 {len(_cache['rooms'])} sala(s) carregada(s)")
+        print(f"[INFO] {len(_cache['rooms'])} sala(s) carregada(s)")
     return _cache["rooms"]
 
 

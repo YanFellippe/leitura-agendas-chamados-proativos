@@ -5,6 +5,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Template do corpo do chamado (HTML com placeholders {campo})
+_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "template_mensagem.txt")
+
+
+def _render_template(values: dict) -> str:
+    """Carrega o template do chamado e substitui os placeholders {campo}.
+
+    Usa substituição literal ({chave} -> valor) para não conflitar com as
+    chaves de estilo/HTML do template.
+    """
+    with open(_TEMPLATE_PATH, "r", encoding="utf-8") as f:
+        html = f.read()
+    for key, value in values.items():
+        html = html.replace("{" + key + "}", str(value))
+    return html
+
 # --- Configuração por ambiente ---
 INVGATE_ENV = os.getenv("INVGATE_ENV", "staging")  # "staging" ou "production"
 
@@ -43,24 +59,24 @@ def find_user_by_email(email: str) -> int | None:
     """
     base_url = _get_base_url()
 
-    print(f"   🔍 Buscando usuário no InvGate por email: {email}")
+    print(f"   [INFO] Buscando usuário no InvGate por email: {email}")
 
     # Tentativa 1: busca por email
     user_id = _search_user(base_url, {"email": email})
     if user_id:
-        print(f"   ✅ Encontrado por email: ID {user_id}")
+        print(f"   [OK] Encontrado por email: ID {user_id}")
         return user_id
 
     # Tentativa 2: busca por username (parte antes do @)
     username = email.split("@")[0] if "@" in email else None
     if username:
-        print(f"   🔍 Tentando por username: {username}")
+        print(f"   [INFO] Tentando por username: {username}")
         user_id = _search_user(base_url, {"username": username})
         if user_id:
-            print(f"   ✅ Encontrado por username: ID {user_id}")
+            print(f"   [OK] Encontrado por username: ID {user_id}")
             return user_id
 
-    print(f"   ⚠️  Usuário NÃO encontrado no InvGate: {email}")
+    print(f"   [AVISO] Usuário NÃO encontrado no InvGate: {email}")
     return None
 
 
@@ -75,12 +91,12 @@ def _search_user(base_url: str, params: dict) -> int | None:
                 auth=_get_auth(),
                 timeout=30,
             )
-            print(f"   📡 {endpoint} {params} → HTTP {resp.status_code}")
+            print(f"   [INFO] {endpoint} {params} -> HTTP {resp.status_code}")
             if resp.status_code == 404:
                 continue
             resp.raise_for_status()
             data = resp.json()
-            print(f"   📦 Resposta: {str(data)[:200]}")
+            print(f"   [INFO] Resposta: {str(data)[:200]}")
             if isinstance(data, dict) and data.get("id"):
                 return int(data["id"])
             if isinstance(data, list) and data:
@@ -88,7 +104,7 @@ def _search_user(base_url: str, params: dict) -> int | None:
         except requests.exceptions.HTTPError:
             continue
         except Exception as e:
-            print(f"   ⚠️  Erro ao buscar usuário InvGate ({endpoint} {params}): {e}")
+            print(f"   [ERRO] Falha ao buscar usuário InvGate ({endpoint} {params}): {e}")
     return None
 
 
@@ -128,11 +144,11 @@ def create_ticket(room: str, subject: str, start_time, email: str = "", organize
             customer_id = found_id
         else:
             print(
-                f"   ⚠️  Organizador não encontrado no InvGate ({organizer_email}); "
+                f"   [AVISO] Organizador não encontrado no InvGate ({organizer_email}); "
                 f"abrindo chamado no Ticketbot."
             )
 
-    # ---- Modelo neutro/corporativo (estilo alerta de monitoramento) ----
+    # ---- Monta o corpo a partir do template externo (template_mensagem.txt) ----
     from datetime import datetime as _dt
     from zoneinfo import ZoneInfo as _ZoneInfo
     from utils.time_utils import calculate_visit_time
@@ -141,103 +157,30 @@ def create_ticket(room: str, subject: str, start_time, email: str = "", organize
     # para que a inspeção esteja concluída quando a reunião começar.
     prazo_vistoria = calculate_visit_time(start_time, minutes_before=VISIT_MINUTES_BEFORE)
 
-    # Saudação: usa o organizador da reunião, ou genérica se não houver
-    saudacao_nome = (organizer_name or organizer_email or "").strip()
-    saudacao = f"Prezado(a) {saudacao_nome}," if saudacao_nome else "Prezado(a),"
+    # Formata o email no padrão de domínio: yan.basilio@agu.gov.br -> agu\yan.basilio
+    def _format_domain_user(addr: str) -> str:
+        addr = (addr or "").strip()
+        if "@" not in addr:
+            return addr
+        login, domain = addr.split("@", 1)
+        netbios = domain.split(".", 1)[0]
+        return f"{netbios}\\{login}" if netbios else login
 
-    # Linha da tabela (rótulo em negrito à esquerda, valor à direita).
-    # Rótulo tem fundo claro fixo -> texto escuro fixo (legível em qualquer tema).
-    # Valor não tem fundo fixo -> herda a cor do tema (color:inherit).
-    def _info_row(label: str, value: str) -> str:
-        return (
-            "<tr>"
-            "<td style=\"padding:8px 12px;border:1px solid #cccccc;background:#f5f5f5;"
-            "color:#222222;font-weight:bold;white-space:nowrap;vertical-align:top;width:180px;\">"
-            f"{label}:</td>"
-            "<td style=\"padding:8px 12px;border:1px solid #cccccc;color:inherit;\">"
-            f"{value}</td>"
-            "</tr>"
-        )
+    organizer_display = _format_domain_user(organizer_email)
 
-    info_rows = ""
-    if local:
-        info_rows += _info_row("Local", local)
-    if tag:
-        info_rows += _info_row("Rede de dados", tag)
-    if organizer_email:
-        info_rows += _info_row("Usuário", organizer_email)
-    info_rows += _info_row("Sala", room)
-    info_rows += _info_row(
-        "Finalizar vistoria até",
-        f"{prazo_vistoria.strftime('%d/%m/%Y')} às {prazo_vistoria.strftime('%H:%M')}",
-    )
+    # Valores dos placeholders do template
+    values = {
+        "usuario": organizer_display or "N/D",
+        "local": local or "N/D",
+        "rede_dados": tag or "N/D",
+        "sala": room,
+        "finalizar_vistoria_ate": (
+            f"{prazo_vistoria.strftime('%d/%m/%Y')} às {prazo_vistoria.strftime('%H:%M')}"
+        ),
+        "deteccao": _dt.now(_ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S"),
+    }
 
-    # Data/hora da detecção (momento da geração do chamado)
-    deteccao = _dt.now(_ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S")
-
-    description = (
-        "<div style=\"font-family:Arial,'Segoe UI',sans-serif;font-size:14px;"
-        "color:inherit;width:100%;line-height:1.5;\">"
-
-        # Saudação
-        f"<p style=\"margin:0 0 14px;\">{saudacao}</p>"
-
-        # Descrição
-        "<p style=\"margin:0 0 14px;\">"
-        "O Departamento de Tecnologia da Informação (DTI), por meio de suas ferramentas de "
-        "monitoramento e automação, identificou uma reunião agendada para esta sala. Foi aberto "
-        "este chamado proativo para a realização de vistoria técnica preventiva dos equipamentos "
-        "de videoconferência antes do início da agenda corporativa, garantindo a disponibilidade "
-        "e o funcionamento dos recursos audiovisuais e de conectividade.</p>"
-
-        "<hr style=\"border:none;border-top:1px solid #dddddd;margin:16px 0;\">"
-
-        # Título da seção
-        "<p style=\"margin:0 0 8px;font-size:15px;font-weight:bold;color:inherit;\">"
-        "Informações do Serviço</p>"
-
-        # Tabela de informações (borda cinza clássica)
-        "<table style=\"width:100%;border-collapse:collapse;font-size:14px;\">"
-        f"{info_rows}"
-        "</table>"
-
-        # ---- Procedimento de testes ----
-        "<p style=\"margin:20px 0 8px;font-size:15px;font-weight:bold;color:inherit;\">"
-        "Procedimento de Testes – Equipamentos de Videoconferência</p>"
-
-        # Acesso à Reunião
-        "<p style=\"margin:12px 0 4px;font-weight:bold;\">Acesso à Reunião</p>"
-        "<ul style=\"margin:0 0 12px;padding-left:22px;\">"
-        "<li><strong>Por link:</strong> clique no link da reunião e, nas opções de ingresso, selecione:"
-        "<ul style=\"margin:4px 0;padding-left:22px;\">"
-        "<li>Áudio da sala (quando houver dispositivo, ex.: Polycom Studio).</li>"
-        "<li>Áudio do computador (quando não houver dispositivo dedicado).</li>"
-        "</ul></li>"
-        "<li><strong>Por convite:</strong> acesse o menu Calendário no Microsoft Teams, "
-        "localize a reunião e clique em Entrar.</li>"
-        "</ul>"
-
-        # Validações
-        "<p style=\"margin:12px 0 4px;font-weight:bold;\">Validações</p>"
-        "<ul style=\"margin:0 0 16px;padding-left:22px;\">"
-        "<li><strong>Imagem da câmera:</strong> verificar se a câmera acompanha o "
-        "movimento do palestrante.</li>"
-        "<li><strong>Áudio e vídeo:</strong> confirmar se estão sendo capturados pela "
-        "câmera/sala (e não por dispositivos adicionais como notebook).</li>"
-        "<li><strong>Teclado:</strong> validar se o teclado está funcional.</li>"
-        "<li><strong>Mouse:</strong> validar se o mouse está funcional.</li>"
-        "<li><strong>Monitor:</strong> validar se o monitor apresenta imagem nítida.</li>"
-        "</ul>"
-
-        # Rodapé (caixa cinza clara)
-        "<div style=\"background:#f0f0f0;border-left:4px solid #cccccc;padding:10px 14px;"
-        "font-size:13px;color:#555555;\">"
-        f"Detecção: {deteccao}<br>"
-        "Nota: Este chamado foi gerado automaticamente pelo sistema de monitoramento."
-        "</div>"
-
-        "</div>"
-    )
+    description = _render_template(values)
 
     payload = {
         "customer_id": customer_id,
@@ -258,5 +201,5 @@ def create_ticket(room: str, subject: str, start_time, email: str = "", organize
     resp.raise_for_status()
     result = resp.json()
 
-    print(f"   🎫 Chamado InvGate criado: #{result.get('request_id')} — {result.get('status')}")
+    print(f"   [OK] Chamado InvGate criado: #{result.get('request_id')} - {result.get('status')}")
     return result

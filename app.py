@@ -1,4 +1,13 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
+# Garante saída em UTF-8 para os emojis dos logs funcionarem em qualquer
+# terminal (evita UnicodeEncodeError no cp1252 do Windows).
+import sys
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from services.calendar import get_events
@@ -7,6 +16,7 @@ from rules.rules import is_valid_meeting
 from utils.time_utils import to_local_time, calculate_visit_time, format_time, BRAZIL_TZ
 from utils.daily_control import DailyControl
 from config.rooms import load_rooms
+from config.whitelist import get_tag
 import time
 
 MAX_WORKERS = 5  # requisições paralelas à Graph API
@@ -17,14 +27,14 @@ EARLY_MEETING_HOUR = 9
 
 def process_room(email: str, control: DailyControl, events=None) -> None:
     """Processa uma sala: busca eventos, valida e abre chamado se necessário."""
-    print(f"📡 Verificando agenda: {email}")
+    print(f"[INFO] Verificando agenda: {email}")
 
     try:
         if events is None:
             events = get_events(email)
 
         if not events:
-            print(f"   ➤ Nenhuma reunião encontrada. [{email}]")
+            print(f"       Nenhuma reunião encontrada. [{email}]")
             return
 
         for event in events:
@@ -35,22 +45,27 @@ def process_room(email: str, control: DailyControl, events=None) -> None:
             if not location:
                 continue
 
+            # Só abre chamado se a sala tiver a tag_name preenchida na whitelist.
+            if not get_tag(email):
+                print(f"       Sala sem tag_name na whitelist, chamado não será aberto. [{email}]")
+                return
+
             if control.already_opened(location):
-                print(f"   ⏭️  Chamado já aberto hoje para: {location}")
+                print(f"       Chamado já aberto hoje para: {location}")
                 return
 
             start    = to_local_time(event["start"]["dateTime"], event["start"].get("timeZone", "UTC"))
             end      = to_local_time(event["end"]["dateTime"],   event["end"].get("timeZone", "UTC"))
             vistoria = calculate_visit_time(start)
 
-            print("   📅 Reunião agendada encontrada!")
-            print(f"   📌 Título: {event.get('subject')}")
-            print(f"   📍 Sala:   {location}")
+            print("   [INFO] Reunião agendada encontrada")
+            print(f"          Título:      {event.get('subject')}")
+            print(f"          Sala:        {location}")
             organizer_email = event.get("organizer", {}).get("emailAddress", {}).get("address", "")
-            print(f"   👤 Organizador: {organizer_email or 'N/A'}")
-            print(f"   ⏰ Início: {format_time(start)}")
-            print(f"   ⏳ Fim:    {format_time(end)}")
-            print(f"   🛠️  Vistoria: {format_time(vistoria)}")
+            print(f"          Organizador: {organizer_email or 'N/A'}")
+            print(f"          Início:      {format_time(start)}")
+            print(f"          Fim:         {format_time(end)}")
+            print(f"          Vistoria:    {format_time(vistoria)}")
 
             try:
                 organizer_email = event.get("organizer", {}).get("emailAddress", {}).get("address", "")
@@ -59,14 +74,14 @@ def process_room(email: str, control: DailyControl, events=None) -> None:
                 req_id = int(result.get("request_id") or result.get("id") or 0)
                 control.mark_as_opened(location, request_id=req_id)
             except Exception as e:
-                print(f"   ⚠️  Erro ao criar chamado InvGate: {e}")
+                print(f"   [ERRO] Falha ao criar chamado InvGate: {e}")
                 control.mark_as_opened(location)
 
-            print("   ✅ Pronto para ação\n")
+            print("   [OK] Chamado processado\n")
             return  # um chamado por sala por dia
 
     except Exception as e:
-        print(f"⚠  Erro ao processar sala {email}: {e}")
+        print(f"[ERRO] Falha ao processar sala {email}: {e}")
 
 
 def check_next_day_early_meetings(rooms: list[str], control: DailyControl) -> None:
@@ -79,7 +94,7 @@ def check_next_day_early_meetings(rooms: list[str], control: DailyControl) -> No
     # +1 minuto de margem para incluir reuniões que começam exatamente no horário limite
     tomorrow_cutoff = tomorrow.replace(hour=EARLY_MEETING_HOUR, minute=1)
 
-    print(f"\n🔮 Verificando reuniões de amanhã ({tomorrow.strftime('%d/%m/%Y')}) até às {EARLY_MEETING_HOUR}h...\n")
+    print(f"\n[INFO] Verificando reuniões de amanhã ({tomorrow.strftime('%d/%m/%Y')}) até às {EARLY_MEETING_HOUR}h...\n")
 
     def fetch_early(email: str):
         try:
@@ -93,18 +108,23 @@ def check_next_day_early_meetings(rooms: list[str], control: DailyControl) -> No
                 if not location:
                     continue
 
+                # Só abre chamado se a sala tiver a tag_name preenchida na whitelist.
+                if not get_tag(email):
+                    print(f"       Sala sem tag_name na whitelist, chamado antecipado não será aberto. [{email}]")
+                    continue
+
                 start = to_local_time(event["start"]["dateTime"], event["start"].get("timeZone", "UTC"))
                 # Chave única: inclui a data da reunião pra não conflitar com chamados do dia atual
                 control_key = f"{location}|antecipado|{start.strftime('%Y-%m-%d')}"
 
                 if control.already_opened(control_key):
-                    print(f"   ⏭️  Chamado antecipado já aberto para: {location} ({start.strftime('%d/%m/%Y')})")
+                    print(f"       Chamado antecipado já aberto para: {location} ({start.strftime('%d/%m/%Y')})")
                     continue
 
                 organizer_email = event.get("organizer", {}).get("emailAddress", {}).get("address", "")
                 organizer_name = event.get("organizer", {}).get("emailAddress", {}).get("name", "")
 
-                print(f"   🌅 Reunião cedo amanhã: {event.get('subject')} às {format_time(start)} em {location}")
+                print(f"   [INFO] Reunião cedo amanhã: {event.get('subject')} às {format_time(start)} em {location}")
 
                 try:
                     result = create_ticket(
@@ -117,12 +137,12 @@ def check_next_day_early_meetings(rooms: list[str], control: DailyControl) -> No
                     )
                     req_id = int(result.get("request_id") or result.get("id") or 0)
                     control.mark_as_opened(control_key, request_id=req_id, anticipated=True)
-                    print(f"   ✅ Chamado antecipado criado para {location}")
+                    print(f"   [OK] Chamado antecipado criado para {location}")
                 except Exception as e:
-                    print(f"   ⚠️  Erro ao criar chamado antecipado: {e}")
+                    print(f"   [ERRO] Falha ao criar chamado antecipado: {e}")
                     control.mark_as_opened(control_key, anticipated=True)
         except Exception as e:
-            print(f"   ⚠️  Erro ao verificar dia seguinte para {email}: {e}")
+            print(f"   [ERRO] Falha ao verificar dia seguinte para {email}: {e}")
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = {executor.submit(fetch_early, email): email for email in rooms}
@@ -130,12 +150,12 @@ def check_next_day_early_meetings(rooms: list[str], control: DailyControl) -> No
             try:
                 future.result()
             except Exception as e:
-                print(f"⚠  Falha inesperada: {e}")
+                print(f"[ERRO] Falha inesperada: {e}")
 
 
 def run():
     t0 = time.time()
-    print("\n🔎 Iniciando verificação de reuniões...\n")
+    print("\n[INFO] Iniciando verificação de reuniões...\n")
 
     rooms   = load_rooms()
     control = DailyControl()
@@ -147,7 +167,7 @@ def run():
                 future.result()
             except Exception as e:
                 email = futures[future]
-                print(f"⚠  Falha inesperada em {email}: {e}")
+                print(f"[ERRO] Falha inesperada em {email}: {e}")
             print("-" * 50)
 
     control.flush()
@@ -156,11 +176,11 @@ def run():
     check_next_day_early_meetings(rooms, control)
 
     elapsed = time.time() - t0
-    print(f"\n⏱️  Ciclo concluído em {elapsed:.1f}s para {len(rooms)} sala(s)\n")
+    print(f"\n[INFO] Ciclo concluído em {elapsed:.1f}s para {len(rooms)} sala(s)\n")
 
 
 if __name__ == "__main__":
     while True:
         run()
-        print("⏳ Aguardando próxima execução...\n")
+        print("[INFO] Aguardando próxima execução...\n")
         time.sleep(300)
