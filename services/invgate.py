@@ -118,20 +118,43 @@ def create_ticket(room: str, subject: str, start_time, email: str = "", organize
     local_title = local if local else room
     title = f"Validação Proativa de Sala de Reunião – {local_title} – {start_time.strftime('%d/%m/%Y %H:%M')}"
 
-    # Usa o ticketbot como customer (mesmo ID do creator)
+    # Customer = usuário organizador da reunião (o chamado é aberto "no nome dele").
+    # Creator continua sendo o Ticketbot (quem envia a primeira mensagem).
+    # Se o organizador não for encontrado no InvGate, cai para o Ticketbot.
     customer_id = INVGATE_CREATOR_ID
+    if organizer_email:
+        found_id = find_user_by_email(organizer_email)
+        if found_id:
+            customer_id = found_id
+        else:
+            print(
+                f"   ⚠️  Organizador não encontrado no InvGate ({organizer_email}); "
+                f"abrindo chamado no Ticketbot."
+            )
 
-    # Monta as linhas da tabela de informações (somente campos preenchidos)
-    # Cores neutras/semitransparentes para ficar legível tanto no tema claro
-    # quanto no tema escuro do InvGate (o corpo herda o fundo do tema).
+    # ---- Modelo neutro/corporativo (estilo alerta de monitoramento) ----
+    from datetime import datetime as _dt
+    from zoneinfo import ZoneInfo as _ZoneInfo
+    from utils.time_utils import calculate_visit_time
+
+    # Prazo da vistoria: X minutos antes do início da reunião,
+    # para que a inspeção esteja concluída quando a reunião começar.
+    prazo_vistoria = calculate_visit_time(start_time, minutes_before=VISIT_MINUTES_BEFORE)
+
+    # Saudação: usa o organizador da reunião, ou genérica se não houver
+    saudacao_nome = (organizer_name or organizer_email or "").strip()
+    saudacao = f"Prezado(a) {saudacao_nome}," if saudacao_nome else "Prezado(a),"
+
+    # Linha da tabela (rótulo em negrito à esquerda, valor à direita).
+    # Rótulo tem fundo claro fixo -> texto escuro fixo (legível em qualquer tema).
+    # Valor não tem fundo fixo -> herda a cor do tema (color:inherit).
     def _info_row(label: str, value: str) -> str:
         return (
             "<tr>"
-            "<td style=\"padding:8px 14px;border-bottom:1px solid rgba(128,128,128,.25);"
-            "font-weight:600;color:#8a94a6;white-space:nowrap;vertical-align:top;\">"
-            f"{label}</td>"
-            "<td style=\"padding:8px 14px;border-bottom:1px solid rgba(128,128,128,.25);"
-            "color:inherit;\">"
+            "<td style=\"padding:8px 12px;border:1px solid #cccccc;background:#f5f5f5;"
+            "color:#222222;font-weight:bold;white-space:nowrap;vertical-align:top;width:180px;\">"
+            f"{label}:</td>"
+            "<td style=\"padding:8px 12px;border:1px solid #cccccc;color:inherit;\">"
             f"{value}</td>"
             "</tr>"
         )
@@ -140,50 +163,79 @@ def create_ticket(room: str, subject: str, start_time, email: str = "", organize
     if local:
         info_rows += _info_row("Local", local)
     if tag:
-        info_rows += _info_row("Tag", tag)
+        info_rows += _info_row("Rede de dados", tag)
+    if organizer_email:
+        info_rows += _info_row("Usuário", organizer_email)
     info_rows += _info_row("Sala", room)
-
-    # Prazo da vistoria: X minutos antes do início da reunião,
-    # para que a inspeção esteja concluída quando a reunião começar.
-    from utils.time_utils import calculate_visit_time
-    prazo_vistoria = calculate_visit_time(start_time, minutes_before=VISIT_MINUTES_BEFORE)
     info_rows += _info_row(
         "Finalizar vistoria até",
         f"{prazo_vistoria.strftime('%d/%m/%Y')} às {prazo_vistoria.strftime('%H:%M')}",
     )
 
+    # Data/hora da detecção (momento da geração do chamado)
+    deteccao = _dt.now(_ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M:%S")
+
     description = (
-        "<div style=\"font-family:'Segoe UI',Arial,sans-serif;max-width:640px;\">"
+        "<div style=\"font-family:Arial,'Segoe UI',sans-serif;font-size:14px;"
+        "color:inherit;width:100%;line-height:1.5;\">"
 
-        # Cabeçalho (azul de marca, legível em ambos os temas)
-        "<div style=\"background:#0b5fff;padding:16px 20px;border-radius:8px 8px 0 0;\">"
-        "<h2 style=\"margin:0;color:#ffffff;font-size:18px;\">"
-        "🛠️ Validação Proativa de Sala de Reunião</h2>"
-        "<p style=\"margin:4px 0 0;color:#dbe7ff;font-size:13px;\">"
-        "Vistoria técnica preventiva antes de agenda corporativa</p>"
-        "</div>"
-
-        # Corpo (sem fundo fixo: herda o fundo claro/escuro do InvGate)
-        "<div style=\"border:1px solid rgba(128,128,128,.3);border-top:none;"
-        "border-radius:0 0 8px 8px;padding:20px;\">"
+        # Saudação
+        f"<p style=\"margin:0 0 14px;\">{saudacao}</p>"
 
         # Descrição
-        "<p style=\"margin:0 0 16px;line-height:1.6;font-size:14px;color:inherit;\">"
-        "Chamado proativo aberto com o objetivo de realizar vistoria técnica preventiva na "
-        "sala de reunião antes do início de agenda corporativa, garantindo disponibilidade e "
-        "funcionamento dos recursos audiovisuais e de conectividade.</p>"
+        "<p style=\"margin:0 0 14px;\">"
+        "O Departamento de Tecnologia da Informação (DTI), por meio de suas ferramentas de "
+        "monitoramento e automação, identificou uma reunião agendada para esta sala. Foi aberto "
+        "este chamado proativo para a realização de vistoria técnica preventiva dos equipamentos "
+        "de videoconferência antes do início da agenda corporativa, garantindo a disponibilidade "
+        "e o funcionamento dos recursos audiovisuais e de conectividade.</p>"
+
+        "<hr style=\"border:none;border-top:1px solid #dddddd;margin:16px 0;\">"
 
         # Título da seção
-        "<p style=\"margin:0 0 8px;font-size:13px;font-weight:700;text-transform:uppercase;"
-        "letter-spacing:.5px;color:#8a94a6;\">Informações do Serviço</p>"
+        "<p style=\"margin:0 0 8px;font-size:15px;font-weight:bold;color:inherit;\">"
+        "Informações do Serviço</p>"
 
-        # Tabela de informações
-        "<table style=\"width:100%;border-collapse:collapse;font-size:14px;color:inherit;"
-        "border:1px solid rgba(128,128,128,.3);border-radius:6px;overflow:hidden;\">"
+        # Tabela de informações (borda cinza clássica)
+        "<table style=\"width:100%;border-collapse:collapse;font-size:14px;\">"
         f"{info_rows}"
         "</table>"
 
+        # ---- Procedimento de testes ----
+        "<p style=\"margin:20px 0 8px;font-size:15px;font-weight:bold;color:inherit;\">"
+        "Procedimento de Testes – Equipamentos de Videoconferência</p>"
+
+        # Acesso à Reunião
+        "<p style=\"margin:12px 0 4px;font-weight:bold;\">Acesso à Reunião</p>"
+        "<ul style=\"margin:0 0 12px;padding-left:22px;\">"
+        "<li><strong>Por link:</strong> clique no link da reunião e, nas opções de ingresso, selecione:"
+        "<ul style=\"margin:4px 0;padding-left:22px;\">"
+        "<li>Áudio da sala (quando houver dispositivo, ex.: Polycom Studio).</li>"
+        "<li>Áudio do computador (quando não houver dispositivo dedicado).</li>"
+        "</ul></li>"
+        "<li><strong>Por convite:</strong> acesse o menu Calendário no Microsoft Teams, "
+        "localize a reunião e clique em Entrar.</li>"
+        "</ul>"
+
+        # Validações
+        "<p style=\"margin:12px 0 4px;font-weight:bold;\">Validações</p>"
+        "<ul style=\"margin:0 0 16px;padding-left:22px;\">"
+        "<li><strong>Imagem da câmera:</strong> verificar se a câmera acompanha o "
+        "movimento do palestrante.</li>"
+        "<li><strong>Áudio e vídeo:</strong> confirmar se estão sendo capturados pela "
+        "câmera/sala (e não por dispositivos adicionais como notebook).</li>"
+        "<li><strong>Teclado:</strong> validar se o teclado está funcional.</li>"
+        "<li><strong>Mouse:</strong> validar se o mouse está funcional.</li>"
+        "<li><strong>Monitor:</strong> validar se o monitor apresenta imagem nítida.</li>"
+        "</ul>"
+
+        # Rodapé (caixa cinza clara)
+        "<div style=\"background:#f0f0f0;border-left:4px solid #cccccc;padding:10px 14px;"
+        "font-size:13px;color:#555555;\">"
+        f"Detecção: {deteccao}<br>"
+        "Nota: Este chamado foi gerado automaticamente pelo sistema de monitoramento."
         "</div>"
+
         "</div>"
     )
 
