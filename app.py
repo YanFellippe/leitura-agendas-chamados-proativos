@@ -179,6 +179,12 @@ def run():
     print(f"\n[INFO] Ciclo concluído em {elapsed:.1f}s para {len(rooms)} sala(s)\n")
 
 
+# if __name__ == "__main__":
+#     # Execução única por acionamento. O agendamento fica a cargo de um
+#     # orquestrador externo (ex.: task no n8n) que chama este script.
+#     run()
+
+    # EXECUÇÃO ANTIGA
 if __name__ == "__main__":
     while True:
         run()
